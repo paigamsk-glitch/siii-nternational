@@ -38,7 +38,7 @@ export function Header() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 text-primary">
           <Plane className="h-6 w-6 rotate-45" />
-          <span className="font-serif text-xl font-bold tracking-tight">S International</span>
+          <span className="brand-name text-xl tracking-tight">S International</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">

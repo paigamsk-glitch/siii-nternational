@@ -14,8 +14,8 @@ import {
   FlightOffer
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CityAutocomplete } from "@/components/city-autocomplete";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -94,11 +94,11 @@ export function Flights() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div className="space-y-2">
                   <Label>From</Label>
-                  <Input value={from} onChange={e => setFrom(e.target.value)} placeholder="City or Airport" />
+                  <CityAutocomplete value={from} onChange={setFrom} placeholder="City or Airport" />
                 </div>
                 <div className="space-y-2">
                   <Label>To</Label>
-                  <Input value={to} onChange={e => setTo(e.target.value)} placeholder="City or Airport" />
+                  <CityAutocomplete value={to} onChange={setTo} placeholder="City or Airport" />
                 </div>
                 <div className="space-y-2">
                   <Label>Date</Label>
@@ -304,8 +304,8 @@ export function Flights() {
                     <div className="md:w-48 md:border-l md:border-border md:pl-6 flex flex-col justify-center items-end md:items-center">
                       <div className="text-sm text-muted-foreground mb-1">{flight.cabinClass}</div>
                       <div className="text-3xl font-bold text-primary mb-1">
-                        {flight.currency === 'USD' ? '$' : flight.currency === 'EUR' ? '€' : flight.currency === 'GBP' ? '£' : ''}
-                        {flight.price}
+                        {flight.currency === 'USD' ? '$' : flight.currency === 'EUR' ? '€' : flight.currency === 'GBP' ? '£' : flight.currency === 'INR' ? '₹' : ''}
+                        {typeof flight.price === 'number' ? flight.price.toLocaleString('en-IN') : flight.price}
                       </div>
                       <div className="text-xs text-muted-foreground mb-4">per traveler</div>
                       <Button onClick={() => handleBook(flight)} className="w-full hover-elevate">Select</Button>

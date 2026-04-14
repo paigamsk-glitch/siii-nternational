@@ -1,0 +1,44 @@
+. Integrate a Travel API (The "Data" Solution)
+A website cannot "know" flight prices or schedules on its own. It must pull this data from a global database. Your developer needs to integrate one of the following:
+
+Amadeus or Sabre: These are the industry standards for real-time flight bookings, used by major agencies.
+
+Skyscanner API (via RapidAPI): Often easier and faster for developers to set up for flight comparisons.
+
+Duffel: A modern, developer-friendly API specifically for selling flights.
+
+2. Connect the "Frontend" to the "Backend"
+Currently, when a user clicks "Search," the website doesn't know where to send that information.
+
+The Fix: Use AJAX or Fetch API. When the button is clicked, the website should gather the "From," "To," and "Date" inputs and send a request to the Travel API mentioned above.
+
+The Result: The page should then display a list of actual flights instead of remaining static.
+
+3. Implement Form Validation
+The "Flight Details" section is likely failing because it accepts empty or invalid data.
+
+The Fix: Add JavaScript validation.
+
+Prevent users from picking a "Return Date" that is earlier than the "Departure Date."
+
+Require all fields (Destination, Passengers, Class) to be filled before the search button becomes active.
+
+4. Create a "Results" Template
+Even if the search works, the site needs a place to show the data.
+
+The Fix: The developer needs to build a dynamic results page. This page should use a loop to display "Flight Cards" showing the Airline Logo, Price, Duration, and a "Book Now" button for every flight found in the API.
+
+Technical Instructions for the Developer
+You can copy and paste this technical "Ticket" to them:
+
+Subject: Implementation of Flight Search Functionality
+
+Data Sourcing: Please integrate a flight API (e.g., Amadeus, Skyscanner, or Duffel) to replace the static/placeholder flight data.
+
+Endpoint Connection: Create a backend route (Node.js/Python/PHP) to handle the search query parameters from the UI and fetch results from the API.
+
+Dynamic UI: Use a frontend framework (or Vanilla JS) to map the API response to the flight result cards. Ensure a loading spinner is visible during the fetch.
+
+State Management: Ensure the user's search criteria (dates, destination) are saved/passed correctly to the booking or checkout page.
+
+Error Handling: Implement a "No flights found" state and an error message if the API fails to respond.

@@ -2,9 +2,10 @@ import { useGetOffers, useGetPopularDestinations, getGetOffersQueryKey, getGetPo
 import { HeroSearch } from "@/components/hero-search";
 import { motion } from "framer-motion";
 import { ArrowRight, Star, Plane, Map } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export function Home() {
+  const [, setLocation] = useLocation();
   const { data: offersData, isLoading: loadingOffers } = useGetOffers({
     query: { queryKey: getGetOffersQueryKey() }
   });
@@ -81,6 +82,7 @@ export function Home() {
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
                   className="group relative aspect-[4/5] rounded-xl overflow-hidden cursor-pointer hover-elevate"
+                  onClick={() => setLocation(`/destination?name=${encodeURIComponent(dest.name)}`)}
                 >
                   <img 
                     src={dest.imageUrl || `https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=800&auto=format&fit=crop`} 

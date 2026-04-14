@@ -2,7 +2,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Plane, Building2, Map } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -11,38 +10,37 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
+import { CityAutocomplete } from "@/components/city-autocomplete";
 
 export function HeroSearch() {
   const [, setLocation] = useLocation();
   const [date, setDate] = useState<Date>();
-  
+  const [flightFrom, setFlightFrom] = useState("");
+  const [flightTo, setFlightTo] = useState("");
+  const [hotelDest, setHotelDest] = useState("");
+  const [holidayDest, setHolidayDest] = useState("");
+
   const handleFlightSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
     const params = new URLSearchParams();
-    if (formData.get("from")) params.append("from", formData.get("from") as string);
-    if (formData.get("to")) params.append("to", formData.get("to") as string);
+    if (flightFrom) params.append("from", flightFrom);
+    if (flightTo) params.append("to", flightTo);
     if (date) params.append("date", format(date, "yyyy-MM-dd"));
-    
     setLocation(`/flights?${params.toString()}`);
   };
 
   const handleHotelSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
     const params = new URLSearchParams();
-    if (formData.get("destination")) params.append("destination", formData.get("destination") as string);
+    if (hotelDest) params.append("destination", hotelDest);
     if (date) params.append("checkIn", format(date, "yyyy-MM-dd"));
-    
     setLocation(`/hotels?${params.toString()}`);
   };
 
   const handleHolidaySearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
     const params = new URLSearchParams();
-    if (formData.get("destination")) params.append("destination", formData.get("destination") as string);
-    
+    if (holidayDest) params.append("destination", holidayDest);
     setLocation(`/holidays?${params.toString()}`);
   };
 
@@ -67,12 +65,24 @@ export function HeroSearch() {
         <TabsContent value="flights" className="mt-0">
           <form onSubmit={handleFlightSearch} className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="from">From</Label>
-              <Input id="from" name="from" placeholder="City or Airport" required />
+              <Label>From</Label>
+              <CityAutocomplete
+                id="from"
+                name="from"
+                placeholder="City or Airport"
+                value={flightFrom}
+                onChange={setFlightFrom}
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="to">To</Label>
-              <Input id="to" name="to" placeholder="City or Airport" required />
+              <Label>To</Label>
+              <CityAutocomplete
+                id="to"
+                name="to"
+                placeholder="City or Airport"
+                value={flightTo}
+                onChange={setFlightTo}
+              />
             </div>
             <div className="space-y-2">
               <Label>Departure</Label>
@@ -109,8 +119,14 @@ export function HeroSearch() {
         <TabsContent value="hotels" className="mt-0">
           <form onSubmit={handleHotelSearch} className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="destination">Destination</Label>
-              <Input id="destination" name="destination" placeholder="City, Hotel, or Landmark" required />
+              <Label>Destination</Label>
+              <CityAutocomplete
+                id="hotel-destination"
+                name="destination"
+                placeholder="City, Hotel, or Landmark"
+                value={hotelDest}
+                onChange={setHotelDest}
+              />
             </div>
             <div className="space-y-2">
               <Label>Check-in</Label>
@@ -147,8 +163,14 @@ export function HeroSearch() {
         <TabsContent value="holidays" className="mt-0">
           <form onSubmit={handleHolidaySearch} className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2 md:col-span-3">
-              <Label htmlFor="holiday-destination">Where do you want to go?</Label>
-              <Input id="holiday-destination" name="destination" placeholder="Country or Region" />
+              <Label>Where do you want to go?</Label>
+              <CityAutocomplete
+                id="holiday-destination"
+                name="destination"
+                placeholder="Country or Region"
+                value={holidayDest}
+                onChange={setHolidayDest}
+              />
             </div>
             <div className="flex items-end">
               <Button type="submit" className="w-full h-10 hover-elevate">Find Packages</Button>
