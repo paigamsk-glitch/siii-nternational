@@ -149,9 +149,18 @@ export function Home() {
                     <p className="text-muted-foreground mb-6 line-clamp-2">{offer.description}</p>
                     <div className="mt-auto flex items-center justify-between">
                       <div className="font-bold text-primary text-xl">{offer.discount}</div>
-                      <Link href="/flights" className="text-sm font-medium hover:underline flex items-center gap-1">
+                      <button
+                        onClick={() => {
+                          if (offer.id === "OFF001") setLocation("/holidays?theme=Beach");
+                          else if (offer.id === "OFF002") setLocation("/flights?to=Goa");
+                          else if (offer.id === "OFF003") setLocation("/hotels?promo=HOTEL20");
+                          else if (offer.id === "OFF004") setLocation("/holidays?theme=Romantic");
+                          else setLocation("/holidays");
+                        }}
+                        className="text-sm font-medium hover:underline flex items-center gap-1"
+                      >
                         Claim Offer <ArrowRight className="w-3 h-3" />
-                      </Link>
+                      </button>
                     </div>
                   </div>
                 </motion.div>
