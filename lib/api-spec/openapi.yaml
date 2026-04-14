@@ -3,20 +3,34 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: S International Travel Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: flights
+    description: Flight search and data
+  - name: hotels
+    description: Hotel search and data
+  - name: holidays
+    description: Holiday packages
+  - name: bookings
+    description: Booking management
+  - name: payments
+    description: Payment processing
+  - name: contact
+    description: Contact and inquiry
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +38,424 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/signup:
+    post:
+      operationId: authSignup
+      tags: [auth]
+      summary: Sign up a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupBody"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Email already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: authLogin
+      tags: [auth]
+      summary: Login an existing user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: authLogout
+      tags: [auth]
+      summary: Logout current user
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/session:
+    get:
+      operationId: getSession
+      tags: [auth]
+      summary: Get current session
+      responses:
+        "200":
+          description: Session info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionResponse"
+
+  /flights/search:
+    get:
+      operationId: searchFlights
+      tags: [flights]
+      summary: Search available flights
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+        - name: to
+          in: query
+          schema:
+            type: string
+        - name: date
+          in: query
+          schema:
+            type: string
+        - name: returnDate
+          in: query
+          schema:
+            type: string
+        - name: tripType
+          in: query
+          schema:
+            type: string
+            enum: [one-way, round-trip]
+        - name: travelers
+          in: query
+          schema:
+            type: integer
+        - name: cabinClass
+          in: query
+          schema:
+            type: string
+            enum: [economy, business, first]
+      responses:
+        "200":
+          description: Flight results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  flights:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/FlightOffer"
+                required:
+                  - flights
+
+  /hotels/search:
+    get:
+      operationId: searchHotels
+      tags: [hotels]
+      summary: Search available hotels
+      parameters:
+        - name: destination
+          in: query
+          schema:
+            type: string
+        - name: checkIn
+          in: query
+          schema:
+            type: string
+        - name: checkOut
+          in: query
+          schema:
+            type: string
+        - name: guests
+          in: query
+          schema:
+            type: integer
+        - name: rooms
+          in: query
+          schema:
+            type: integer
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+        - name: rating
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Hotel results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hotels:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/HotelListing"
+                required:
+                  - hotels
+
+  /holidays/search:
+    get:
+      operationId: searchHolidays
+      tags: [holidays]
+      summary: Search holiday packages
+      parameters:
+        - name: destination
+          in: query
+          schema:
+            type: string
+        - name: theme
+          in: query
+          schema:
+            type: string
+        - name: duration
+          in: query
+          schema:
+            type: integer
+        - name: travelers
+          in: query
+          schema:
+            type: integer
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Holiday packages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  packages:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/HolidayPackage"
+                required:
+                  - packages
+
+  /bookings:
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Create a new booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookingBody"
+      responses:
+        "201":
+          description: Booking created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    get:
+      operationId: getBookings
+      tags: [bookings]
+      summary: Get all bookings for current user
+      responses:
+        "200":
+          description: User bookings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookings:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Booking"
+                required:
+                  - bookings
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bookings/{id}:
+    get:
+      operationId: getBookingById
+      tags: [bookings]
+      summary: Get a booking by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Booking details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /payments/process:
+    post:
+      operationId: processPayment
+      tags: [payments]
+      summary: Process a payment for a booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProcessPaymentBody"
+      responses:
+        "200":
+          description: Payment result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentResult"
+        "400":
+          description: Payment failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /contact:
+    post:
+      operationId: submitContact
+      tags: [contact]
+      summary: Submit a contact inquiry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactBody"
+      responses:
+        "201":
+          description: Inquiry submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /offers:
+    get:
+      operationId: getOffers
+      tags: [holidays]
+      summary: Get featured offers and deals
+      responses:
+        "200":
+          description: Featured offers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  offers:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Offer"
+                required:
+                  - offers
+
+  /destinations/popular:
+    get:
+      operationId: getPopularDestinations
+      tags: [holidays]
+      summary: Get popular travel destinations
+      responses:
+        "200":
+          description: Popular destinations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  destinations:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Destination"
+                required:
+                  - destinations
+
+  /testimonials:
+    get:
+      operationId: getTestimonials
+      tags: [holidays]
+      summary: Get customer testimonials
+      responses:
+        "200":
+          description: Testimonials list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  testimonials:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Testimonial"
+                required:
+                  - testimonials
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +466,483 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required:
+        - error
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    SignupBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        phone:
+          type: string
+      required:
+        - name
+        - email
+        - password
+
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - email
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        message:
+          type: string
+      required:
+        - user
+        - message
+
+    SessionResponse:
+      type: object
+      properties:
+        authenticated:
+          type: boolean
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - authenticated
+
+    FlightOffer:
+      type: object
+      properties:
+        id:
+          type: string
+        airline:
+          type: string
+        airlineCode:
+          type: string
+        flightNumber:
+          type: string
+        from:
+          type: string
+        fromCode:
+          type: string
+        to:
+          type: string
+        toCode:
+          type: string
+        departureTime:
+          type: string
+        arrivalTime:
+          type: string
+        duration:
+          type: string
+        stops:
+          type: integer
+        cabinClass:
+          type: string
+        price:
+          type: number
+        currency:
+          type: string
+        seatsLeft:
+          type: integer
+        amenities:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - airline
+        - flightNumber
+        - from
+        - fromCode
+        - to
+        - toCode
+        - departureTime
+        - arrivalTime
+        - duration
+        - stops
+        - cabinClass
+        - price
+        - currency
+
+    HotelListing:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        destination:
+          type: string
+        address:
+          type: string
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+        pricePerNight:
+          type: number
+        currency:
+          type: string
+        amenities:
+          type: array
+          items:
+            type: string
+        imageUrl:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        checkIn:
+          type: string
+        checkOut:
+          type: string
+      required:
+        - id
+        - name
+        - destination
+        - rating
+        - pricePerNight
+        - currency
+
+    HolidayPackage:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        destination:
+          type: string
+        country:
+          type: string
+        theme:
+          type: string
+        duration:
+          type: integer
+        price:
+          type: number
+        currency:
+          type: string
+        inclusions:
+          type: array
+          items:
+            type: string
+        highlights:
+          type: array
+          items:
+            type: string
+        imageUrl:
+          type: string
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+        maxTravelers:
+          type: integer
+        description:
+          type: string
+        departureDates:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - title
+        - destination
+        - theme
+        - duration
+        - price
+        - currency
+
+    CreateBookingBody:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [flight, hotel, holiday]
+        itemId:
+          type: string
+        travelers:
+          type: integer
+        checkIn:
+          type: string
+        checkOut:
+          type: string
+        contactName:
+          type: string
+        contactEmail:
+          type: string
+        contactPhone:
+          type: string
+        totalAmount:
+          type: number
+        currency:
+          type: string
+        notes:
+          type: string
+      required:
+        - type
+        - itemId
+        - travelers
+        - contactName
+        - contactEmail
+        - contactPhone
+        - totalAmount
+        - currency
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        type:
+          type: string
+        itemId:
+          type: string
+        travelers:
+          type: integer
+        checkIn:
+          type: string
+        checkOut:
+          type: string
+        contactName:
+          type: string
+        contactEmail:
+          type: string
+        contactPhone:
+          type: string
+        totalAmount:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled, completed]
+        paymentStatus:
+          type: string
+          enum: [unpaid, paid, refunded, failed]
+        createdAt:
+          type: string
+        itemDetails:
+          type: object
+          additionalProperties: true
+        notes:
+          type: string
+      required:
+        - id
+        - type
+        - itemId
+        - travelers
+        - contactName
+        - contactEmail
+        - contactPhone
+        - totalAmount
+        - currency
+        - status
+        - paymentStatus
+        - createdAt
+
+    ProcessPaymentBody:
+      type: object
+      properties:
+        bookingId:
+          type: string
+        method:
+          type: string
+          enum: [card, upi, netbanking, wallet]
+        cardNumber:
+          type: string
+        cardExpiry:
+          type: string
+        cardCvv:
+          type: string
+        cardName:
+          type: string
+        upiId:
+          type: string
+        bank:
+          type: string
+        wallet:
+          type: string
+      required:
+        - bookingId
+        - method
+
+    PaymentResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        transactionId:
+          type: string
+        bookingId:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        method:
+          type: string
+        status:
+          type: string
+          enum: [success, failed, pending]
+        message:
+          type: string
+        timestamp:
+          type: string
+      required:
+        - success
+        - bookingId
+        - status
+        - message
+
+    Offer:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        discount:
+          type: string
+        code:
+          type: string
+        validUntil:
+          type: string
+        category:
+          type: string
+        imageUrl:
+          type: string
+        termsAndConditions:
+          type: string
+      required:
+        - id
+        - title
+        - description
+        - discount
+        - category
+
+    Destination:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        country:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+        startingPrice:
+          type: number
+        currency:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        rating:
+          type: number
+      required:
+        - id
+        - name
+        - country
+        - startingPrice
+        - currency
+
+    Testimonial:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        location:
+          type: string
+        rating:
+          type: number
+        review:
+          type: string
+        tripType:
+          type: string
+        destination:
+          type: string
+        date:
+          type: string
+        avatarUrl:
+          type: string
+      required:
+        - id
+        - name
+        - rating
+        - review
+
+    ContactBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        subject:
+          type: string
+        message:
+          type: string
+        inquiryType:
+          type: string
+          enum: [general, booking, complaint, feedback, partnership]
+      required:
+        - name
+        - email
+        - subject
+        - message

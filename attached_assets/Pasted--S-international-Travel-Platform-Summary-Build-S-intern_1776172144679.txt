@@ -1,0 +1,58 @@
+# S international Travel Platform
+
+## Summary
+Build `S international` as a responsive travel website with frontend and backend behavior, inspired by MakeMyTrip but clearly rebranded and not pixel-matched. The site should include Home, Flights, Hotels, Holidays, and Contact pages, plus authentication, checkout, bookings, and payment flows. Internally it will use only local mock data and static/local assets, but the UI, copy, and user journeys must feel like a real travel platform and must not describe itself as a demo anywhere user-facing.
+
+## Implementation Changes
+- Build a shared frontend shell across all pages:
+  branded header, navigation, mobile menu, polished footer, reusable cards/forms/buttons, and a travel-focused visual system tailored to `S international`.
+- Implement page behavior:
+  `Home` with hero search tabs, offers, destinations, featured stays/packages, trust signals, and rich footer content.
+  `Flights` with trip-type toggle, traveler/class controls, search results, fare summary, and booking CTA.
+  `Hotels` with destination/date/guest filters, listing cards, amenity/rating content, and booking CTA.
+  `Holidays` with themed package browsing, filters, highlights, and booking CTA.
+  `Contact` with inquiry form, support details, FAQ snippet, and office/map placeholder.
+- Add full user flows without exposing internal mock behavior:
+  signup, login, logout, session persistence, protected bookings/profile views, booking creation, checkout review, payment method selection, payment processing, and confirmation.
+- Implement backend-backed local behavior:
+  auth/session endpoints, product search endpoints, booking creation/retrieval, contact submission handling, and payment-status simulation.
+- Ensure all user-facing messaging is production-style:
+  no “demo”, “fake”, “mock”, “sample”, “test portal”, or similar labels in the interface, confirmation pages, or validation text.
+- Keep all seed content centrally managed:
+  flights, hotels, holiday packages, offers, FAQs, testimonials, users, and bookings stored in local data files for easy replacement later.
+
+## Public Interfaces / Contracts
+- Frontend routes:
+  `/`, `/flights`, `/hotels`, `/holidays`, `/contact`, `/login`, `/signup`, `/bookings`, `/checkout`, `/payment`, `/confirmation`.
+- Backend API surface:
+  `POST /api/auth/signup`
+  `POST /api/auth/login`
+  `POST /api/auth/logout`
+  `GET /api/auth/session`
+  `GET /api/flights/search`
+  `GET /api/hotels/search`
+  `GET /api/holidays/search`
+  `POST /api/bookings`
+  `GET /api/bookings`
+  `GET /api/bookings/:id`
+  `POST /api/payments/process`
+  `POST /api/contact`
+- Core local data models:
+  `User`, `Session`, `FlightOffer`, `HotelListing`, `HolidayPackage`, `Booking`, `PaymentTransaction`, `InquiryMessage`.
+- Internal-only rule:
+  the app may use local seeded data and simulated processing behind the scenes, but these details must stay out of user-facing content and page copy.
+
+## Test Plan
+- Verify all pages and protected routes render correctly across mobile, tablet, and desktop.
+- Verify Flights, Hotels, and Holidays searches return coherent results, empty states, and filters without exposing internal/mock wording.
+- Verify signup/login/logout, session restoration, invalid credentials, and protected-route redirects.
+- Verify booking creation works from flights, hotels, and holidays and appears correctly in the user’s bookings area.
+- Verify payment flow supports success, failure, cancel, and retry while preserving booking context and using realistic UI copy.
+- Verify contact form submission, validation, and success/error handling.
+- Verify all branding is `S international` and no `MakeMyTrip` or “demo/fake/mock” text appears anywhere visible.
+
+## Assumptions And Defaults
+- No external APIs, live gateways, or third-party booking systems in v1.
+- Local-only data and assets are acceptable as long as the UX presents as a real product.
+- Placeholder or royalty-safe travel imagery can be used initially and swapped later.
+- Runtime can stay implementation-agnostic in the plan; when coding starts, use the first available local server runtime while preserving the routes and behavior defined above.

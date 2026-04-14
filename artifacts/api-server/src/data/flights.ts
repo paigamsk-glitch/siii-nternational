@@ -1,0 +1,223 @@
+export const flightsData = [
+  {
+    id: "FL001",
+    airline: "Air India",
+    airlineCode: "AI",
+    flightNumber: "AI-101",
+    from: "Delhi",
+    fromCode: "DEL",
+    to: "Mumbai",
+    toCode: "BOM",
+    departureTime: "06:00",
+    arrivalTime: "08:10",
+    duration: "2h 10m",
+    stops: 0,
+    cabinClass: "economy",
+    price: 4850,
+    currency: "INR",
+    seatsLeft: 12,
+    amenities: ["In-flight meal", "USB charging", "Entertainment system"],
+  },
+  {
+    id: "FL002",
+    airline: "IndiGo",
+    airlineCode: "6E",
+    flightNumber: "6E-202",
+    from: "Delhi",
+    fromCode: "DEL",
+    to: "Mumbai",
+    toCode: "BOM",
+    departureTime: "08:30",
+    arrivalTime: "10:40",
+    duration: "2h 10m",
+    stops: 0,
+    cabinClass: "economy",
+    price: 3990,
+    currency: "INR",
+    seatsLeft: 5,
+    amenities: ["USB charging", "Snacks available"],
+  },
+  {
+    id: "FL003",
+    airline: "Vistara",
+    airlineCode: "UK",
+    flightNumber: "UK-303",
+    from: "Delhi",
+    fromCode: "DEL",
+    to: "Bangalore",
+    toCode: "BLR",
+    departureTime: "07:15",
+    arrivalTime: "09:45",
+    duration: "2h 30m",
+    stops: 0,
+    cabinClass: "business",
+    price: 12500,
+    currency: "INR",
+    seatsLeft: 3,
+    amenities: ["Business lounge access", "Premium meal", "Wide seats", "Priority boarding"],
+  },
+  {
+    id: "FL004",
+    airline: "SpiceJet",
+    airlineCode: "SG",
+    flightNumber: "SG-404",
+    from: "Mumbai",
+    fromCode: "BOM",
+    to: "Goa",
+    toCode: "GOI",
+    departureTime: "10:00",
+    arrivalTime: "11:15",
+    duration: "1h 15m",
+    stops: 0,
+    cabinClass: "economy",
+    price: 2750,
+    currency: "INR",
+    seatsLeft: 20,
+    amenities: ["Snacks available", "USB charging"],
+  },
+  {
+    id: "FL005",
+    airline: "Air India",
+    airlineCode: "AI",
+    flightNumber: "AI-505",
+    from: "Delhi",
+    fromCode: "DEL",
+    to: "Dubai",
+    toCode: "DXB",
+    departureTime: "14:00",
+    arrivalTime: "16:30",
+    duration: "3h 30m",
+    stops: 0,
+    cabinClass: "economy",
+    price: 18500,
+    currency: "INR",
+    seatsLeft: 8,
+    amenities: ["In-flight meal", "Entertainment system", "USB charging"],
+  },
+  {
+    id: "FL006",
+    airline: "Emirates",
+    airlineCode: "EK",
+    flightNumber: "EK-606",
+    from: "Mumbai",
+    fromCode: "BOM",
+    to: "Dubai",
+    toCode: "DXB",
+    departureTime: "09:00",
+    arrivalTime: "11:00",
+    duration: "2h 45m",
+    stops: 0,
+    cabinClass: "business",
+    price: 45000,
+    currency: "INR",
+    seatsLeft: 2,
+    amenities: ["Lie-flat seats", "Gourmet dining", "Lounge access", "Chauffeur service"],
+  },
+  {
+    id: "FL007",
+    airline: "IndiGo",
+    airlineCode: "6E",
+    flightNumber: "6E-707",
+    from: "Bangalore",
+    fromCode: "BLR",
+    to: "Chennai",
+    toCode: "MAA",
+    departureTime: "12:00",
+    arrivalTime: "13:05",
+    duration: "1h 05m",
+    stops: 0,
+    cabinClass: "economy",
+    price: 2200,
+    currency: "INR",
+    seatsLeft: 30,
+    amenities: ["USB charging"],
+  },
+  {
+    id: "FL008",
+    airline: "Vistara",
+    airlineCode: "UK",
+    flightNumber: "UK-808",
+    from: "Delhi",
+    fromCode: "DEL",
+    to: "London",
+    toCode: "LHR",
+    departureTime: "22:00",
+    arrivalTime: "04:30",
+    duration: "9h 30m",
+    stops: 0,
+    cabinClass: "economy",
+    price: 42000,
+    currency: "INR",
+    seatsLeft: 15,
+    amenities: ["In-flight meal", "Entertainment system", "USB charging", "Blanket & pillow"],
+  },
+  {
+    id: "FL009",
+    airline: "Singapore Airlines",
+    airlineCode: "SQ",
+    flightNumber: "SQ-909",
+    from: "Mumbai",
+    fromCode: "BOM",
+    to: "Singapore",
+    toCode: "SIN",
+    departureTime: "01:30",
+    arrivalTime: "09:30",
+    duration: "6h 00m",
+    stops: 0,
+    cabinClass: "economy",
+    price: 28000,
+    currency: "INR",
+    seatsLeft: 10,
+    amenities: ["Gourmet meal", "KrisWorld entertainment", "USB & power outlets", "Amenity kit"],
+  },
+  {
+    id: "FL010",
+    airline: "Air India",
+    airlineCode: "AI",
+    flightNumber: "AI-1010",
+    from: "Delhi",
+    fromCode: "DEL",
+    to: "New York",
+    toCode: "JFK",
+    departureTime: "03:00",
+    arrivalTime: "11:00",
+    duration: "15h 30m",
+    stops: 1,
+    cabinClass: "economy",
+    price: 68000,
+    currency: "INR",
+    seatsLeft: 22,
+    amenities: ["In-flight meals", "Entertainment system", "USB charging", "Blanket & pillow", "Checked baggage"],
+  },
+];
+
+export function searchFlights(params: {
+  from?: string;
+  to?: string;
+  cabinClass?: string;
+  travelers?: number;
+}) {
+  let results = [...flightsData];
+
+  if (params.from) {
+    const fromLower = params.from.toLowerCase();
+    results = results.filter(
+      (f) =>
+        f.from.toLowerCase().includes(fromLower) ||
+        f.fromCode.toLowerCase().includes(fromLower)
+    );
+  }
+  if (params.to) {
+    const toLower = params.to.toLowerCase();
+    results = results.filter(
+      (f) =>
+        f.to.toLowerCase().includes(toLower) ||
+        f.toCode.toLowerCase().includes(toLower)
+    );
+  }
+  if (params.cabinClass) {
+    results = results.filter((f) => f.cabinClass === params.cabinClass);
+  }
+
+  return results;
+}
