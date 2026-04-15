@@ -12,8 +12,8 @@ import {
   HotelListing
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CityAutocomplete } from "@/components/city-autocomplete";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -38,11 +38,13 @@ export function Hotels() {
   const [checkOut, setCheckOut] = useState<Date>();
   const [guests, setGuests] = useState(2);
   const [rooms, setRooms] = useState(1);
+  const [promoCode, setPromoCode] = useState<string | null>(null);
   
   // Read params from URL on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("destination")) setDestination(params.get("destination") as string);
+    if (params.get("promo")) setPromoCode(params.get("promo"));
     if (params.get("checkIn")) {
       try { setCheckIn(parseISO(params.get("checkIn") as string)); } catch (e) {}
     }
@@ -88,15 +90,11 @@ export function Hotels() {
             <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="space-y-2 lg:col-span-2">
                 <Label>Destination</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    value={destination} 
-                    onChange={e => setDestination(e.target.value)} 
-                    placeholder="City, landmark, or property name" 
-                    className="pl-9"
-                  />
-                </div>
+                <CityAutocomplete
+                  value={destination}
+                  onChange={setDestination}
+                  placeholder="City, hotel, or landmark"
+                />
               </div>
               
               <div className="space-y-2">
@@ -152,6 +150,23 @@ export function Hotels() {
           </div>
         </div>
       </div>
+
+      {promoCode === "HOTEL20" && (
+        <div className="bg-secondary/10 border-b border-secondary/30">
+          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-secondary font-bold text-lg">🎉</span>
+              <div>
+                <span className="font-semibold text-foreground">Hotel Stay & Save offer applied!</span>
+                <span className="text-muted-foreground text-sm ml-2">Get 20% off when you book 3+ nights. Use code </span>
+                <span className="font-mono font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded text-sm">HOTEL20</span>
+                <span className="text-muted-foreground text-sm ml-1"> at checkout.</span>
+              </div>
+            </div>
+            <button onClick={() => setPromoCode(null)} className="text-muted-foreground hover:text-foreground text-xl leading-none">×</button>
+          </div>
+        </div>
+      )}
 
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
@@ -304,8 +319,8 @@ export function Hotels() {
                       <div className="flex items-end justify-between mt-auto pt-4 border-t border-border">
                         <div>
                           <div className="text-2xl font-bold text-primary">
-                            {hotel.currency === 'USD' ? '$' : hotel.currency === 'EUR' ? '€' : hotel.currency === 'GBP' ? '£' : ''}
-                            {hotel.pricePerNight}
+                            {hotel.currency === 'USD' ? '$' : hotel.currency === 'EUR' ? '€' : hotel.currency === 'GBP' ? '£' : hotel.currency === 'INR' ? '₹' : ''}
+                            {typeof hotel.pricePerNight === 'number' ? hotel.pricePerNight.toLocaleString('en-IN') : hotel.pricePerNight}
                           </div>
                           <div className="text-xs text-muted-foreground">per night / incl. taxes</div>
                         </div>

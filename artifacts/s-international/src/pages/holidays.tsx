@@ -32,6 +32,7 @@ export function Holidays() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("destination")) setDestination(params.get("destination") as string);
+    if (params.get("theme")) setActiveTheme(params.get("theme") as string);
   }, []);
 
   const searchParams = {
@@ -195,8 +196,8 @@ export function Holidays() {
                     <div>
                       <div className="text-xs text-muted-foreground font-medium mb-1">From</div>
                       <div className="text-2xl font-bold text-primary">
-                        {pkg.currency === 'USD' ? '$' : pkg.currency === 'EUR' ? '€' : pkg.currency === 'GBP' ? '£' : ''}
-                        {pkg.price}
+                        {pkg.currency === 'USD' ? '$' : pkg.currency === 'EUR' ? '€' : pkg.currency === 'GBP' ? '£' : pkg.currency === 'INR' ? '₹' : ''}
+                        {typeof pkg.price === 'number' ? pkg.price.toLocaleString('en-IN') : pkg.price}
                       </div>
                     </div>
                     <Button onClick={() => handleBook(pkg)} className="hover-elevate">View Details</Button>
