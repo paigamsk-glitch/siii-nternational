@@ -4,6 +4,49 @@ import { SubmitContactBody } from "@workspace/api-zod";
 
 const router: IRouter = Router();
 
+async function sendWhatsAppNotification(data: {
+  name: string;
+  email: string;
+  phone?: string | null;
+  subject: string;
+  message: string;
+  inquiryType: string;
+}) {
+  const apiKey = process.env.CALLMEBOT_APIKEY;
+  const whatsappPhone = "917777027454";
+
+  if (!apiKey) {
+    console.log("[WhatsApp] CALLMEBOT_APIKEY not set — skipping WhatsApp notification");
+    return;
+  }
+
+  const lines = [
+    `📩 *New Inquiry – S International*`,
+    ``,
+    `👤 *Name:* ${data.name}`,
+    `📧 *Email:* ${data.email}`,
+    data.phone ? `📞 *Phone:* ${data.phone}` : null,
+    `🏷️ *Type:* ${data.inquiryType}`,
+    `📋 *Subject:* ${data.subject}`,
+    ``,
+    `💬 *Message:*`,
+    data.message,
+  ].filter(Boolean).join("\n");
+
+  const url = `https://api.callmebot.com/whatsapp.php?phone=${whatsappPhone}&text=${encodeURIComponent(lines)}&apikey=${apiKey}`;
+
+  try {
+    const response = await fetch(url);
+    if (response.ok) {
+      console.log("[WhatsApp] Notification sent successfully");
+    } else {
+      console.warn(`[WhatsApp] CallMeBot returned status ${response.status}`);
+    }
+  } catch (err) {
+    console.warn("[WhatsApp] Failed to send notification:", err);
+  }
+}
+
 router.post("/contact", async (req, res): Promise<void> => {
   const parsed = SubmitContactBody.safeParse(req.body);
   if (!parsed.success) {
@@ -12,6 +55,15 @@ router.post("/contact", async (req, res): Promise<void> => {
   }
 
   await db.insert(contactInquiriesTable).values({
+    name: parsed.data.name,
+    email: parsed.data.email,
+    phone: parsed.data.phone ?? null,
+    subject: parsed.data.subject,
+    message: parsed.data.message,
+    inquiryType: parsed.data.inquiryType ?? "general",
+  });
+
+  sendWhatsAppNotification({
     name: parsed.data.name,
     email: parsed.data.email,
     phone: parsed.data.phone ?? null,
