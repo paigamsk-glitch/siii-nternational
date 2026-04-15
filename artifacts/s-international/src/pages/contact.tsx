@@ -105,7 +105,7 @@ export function Contact() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Mail className="w-4 h-4 text-primary" />
-                        <a href="mailto:info@sinternational.com" className="hover:text-primary transition-colors">info@sinternational.com</a>
+                        <a href="mailto:sagarinternationaltravels@mail.com" className="hover:text-primary transition-colors">sagarinternationaltravels@mail.com</a>
                       </div>
                       <div className="flex items-center gap-2">
                         <MessageCircle className="w-4 h-4 text-green-500" />
