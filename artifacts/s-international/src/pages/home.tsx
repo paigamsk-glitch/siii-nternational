@@ -1,8 +1,9 @@
 import { useGetOffers, useGetPopularDestinations, getGetOffersQueryKey, getGetPopularDestinationsQueryKey } from "@workspace/api-client-react";
 import { HeroSearch } from "@/components/hero-search";
 import { motion } from "framer-motion";
-import { ArrowRight, Star, Plane, Map } from "lucide-react";
+import { ArrowRight, Star, Plane, Map, Clock, CheckCircle2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { travelPackages } from "@/data/packages";
 
 export function Home() {
   const [, setLocation] = useLocation();
@@ -109,8 +110,131 @@ export function Home() {
         </div>
       </section>
 
-      {/* Featured Offers */}
+      {/* Featured Packages */}
       <section className="py-24 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-12">
+            <div>
+              <div className="text-secondary text-sm font-bold tracking-widest uppercase mb-3">Curated For You</div>
+              <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-4">Top Travel Packages</h2>
+              <p className="text-muted-foreground max-w-xl text-lg">
+                All-inclusive journeys designed by experts — flights, stays, tours and memories, all wrapped in one price.
+              </p>
+            </div>
+            <Link
+              href="/packages"
+              className="text-secondary font-medium flex items-center gap-2 hover:gap-3 transition-all mt-4 md:mt-0 shrink-0"
+            >
+              Explore all packages <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {travelPackages
+              .filter(p => p.badge)
+              .slice(0, 3)
+              .map((pkg, i) => (
+                <motion.div
+                  key={pkg.id}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 flex flex-col"
+                >
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    <img
+                      src={pkg.images[0]}
+                      alt={pkg.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    {pkg.badge && (
+                      <div className="absolute top-3 left-3 bg-secondary text-secondary-foreground text-xs font-bold px-3 py-1 rounded-full shadow">
+                        {pkg.badge}
+                      </div>
+                    )}
+                    <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5" />
+                      {pkg.duration} Days
+                    </div>
+                  </div>
+
+                  <div className="p-6 flex flex-col flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-semibold text-secondary uppercase tracking-widest">
+                        {pkg.destination}, {pkg.country}
+                      </span>
+                      <div className="flex items-center gap-1 text-xs font-medium">
+                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                        {pkg.rating}
+                      </div>
+                    </div>
+
+                    <h3 className="text-xl font-serif font-bold text-foreground mb-3 group-hover:text-primary transition-colors leading-snug">
+                      {pkg.title}
+                    </h3>
+
+                    <div className="space-y-1.5 mb-5 flex-1">
+                      {pkg.highlights.slice(0, 2).map((h, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-xs text-foreground/75">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-secondary shrink-0" />
+                          <span className="line-clamp-1">{h}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="pt-4 border-t border-border flex items-end justify-between">
+                      <div>
+                        {pkg.originalPrice > pkg.price && (
+                          <div className="text-xs text-muted-foreground line-through mb-0.5">
+                            ₹{pkg.originalPrice.toLocaleString("en-IN")}
+                          </div>
+                        )}
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-bold text-primary">
+                            ₹{pkg.price.toLocaleString("en-IN")}
+                          </span>
+                          <span className="text-xs text-muted-foreground">/person</span>
+                        </div>
+                      </div>
+                      <Link href={`/packages/${pkg.slug}`}>
+                        <button className="flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all">
+                          View Details <ArrowRight className="w-4 h-4" />
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+          </div>
+
+          {/* CTA Banner */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="mt-12 bg-primary rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 text-white"
+          >
+            <div>
+              <h3 className="text-2xl md:text-3xl font-serif font-bold mb-2">Not sure where to go?</h3>
+              <p className="text-white/70 text-base max-w-lg">
+                Browse all 8 curated packages across 8 destinations — from Bali beaches to Paris romance.
+              </p>
+            </div>
+            <Link href="/packages">
+              <button className="shrink-0 bg-white text-primary font-bold px-8 py-4 rounded-xl hover:bg-white/90 transition-colors flex items-center gap-2 text-base">
+                Browse All Packages
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Featured Offers */}
+      <section className="py-24 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-4">Exclusive Privileges</h2>
