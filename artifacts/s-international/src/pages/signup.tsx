@@ -42,7 +42,7 @@ export function Signup() {
         setLocation("/bookings");
       },
       onError: (error) => {
-        setErrorMsg(error?.error || "Registration failed. Please try again.");
+        setErrorMsg((error?.data as any)?.error || (error?.data as any)?.message || "Registration failed. Please try again.");
       }
     }
   });

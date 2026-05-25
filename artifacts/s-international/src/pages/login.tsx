@@ -39,7 +39,7 @@ export function Login() {
         setLocation("/bookings");
       },
       onError: (error) => {
-        setErrorMsg(error?.error || "Invalid credentials. Please try again.");
+        setErrorMsg((error?.data as any)?.error || (error?.data as any)?.message || "Invalid credentials. Please try again.");
       }
     }
   });

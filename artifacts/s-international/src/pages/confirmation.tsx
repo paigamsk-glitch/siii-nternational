@@ -82,7 +82,7 @@ export function Confirmation() {
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Amount</p>
                 <p className="font-bold text-primary">
-                  {booking.currency === 'USD' ? '$' : booking.currency === 'EUR' ? '€' : booking.currency === 'GBP' ? '£' : ''}
+                  {booking.currency === 'USD' ? '$' : booking.currency === 'EUR' ? '€' : booking.currency === 'GBP' ? '£' : booking.currency === 'INR' ? '₹' : ''}
                   {booking.totalAmount}
                 </p>
               </div>

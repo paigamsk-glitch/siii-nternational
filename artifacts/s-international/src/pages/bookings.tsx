@@ -209,7 +209,7 @@ function BookingCard({ booking, index, getStatusColor, getPaymentStatusColor, ge
         <div className="md:w-48 md:border-l md:border-border md:pl-6 flex flex-row md:flex-col justify-between md:justify-center items-center md:items-end gap-4 md:gap-2">
           <div className="flex flex-col items-start md:items-end">
             <div className="text-xl font-bold text-primary mb-1">
-              {booking.currency === 'USD' ? '$' : booking.currency === 'EUR' ? '€' : booking.currency === 'GBP' ? '£' : ''}
+              {booking.currency === 'USD' ? '$' : booking.currency === 'EUR' ? '€' : booking.currency === 'GBP' ? '£' : booking.currency === 'INR' ? '₹' : ''}
               {booking.totalAmount}
             </div>
             <div className={`text-xs px-2 py-1 rounded font-semibold capitalize ${getPaymentStatusColor(booking.paymentStatus)}`}>

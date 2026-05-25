@@ -106,7 +106,7 @@ export function Checkout() {
 
   const taxes = price * 0.15; // 15% tax
   const totalAmount = price + taxes;
-  const currencySymbol = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '';
+  const currencySymbol = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : currency === 'INR' ? '₹' : '';
 
   const onSubmit = (data: z.infer<typeof checkoutSchema>) => {
     if (!session?.authenticated) {

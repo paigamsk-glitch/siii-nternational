@@ -65,7 +65,7 @@ export function Payment() {
 
   if (!booking) return null;
 
-  const currencySymbol = booking.currency === 'USD' ? '$' : booking.currency === 'EUR' ? '€' : booking.currency === 'GBP' ? '£' : '';
+  const currencySymbol = booking.currency === 'USD' ? '$' : booking.currency === 'EUR' ? '€' : booking.currency === 'GBP' ? '£' : booking.currency === 'INR' ? '₹' : '';
 
   return (
     <div className="min-h-screen bg-muted/20 py-12">
