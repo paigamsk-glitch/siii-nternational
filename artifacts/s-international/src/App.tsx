@@ -18,6 +18,9 @@ import { Checkout } from "@/pages/checkout";
 import { Payment } from "@/pages/payment";
 import { Confirmation } from "@/pages/confirmation";
 import { Destination } from "@/pages/destination";
+import { Packages } from "@/pages/packages";
+import { PackageDetail } from "@/pages/package-detail";
+import { PackageBooking } from "@/pages/package-booking";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +40,9 @@ function Router() {
         <Route path="/payment" component={Payment} />
         <Route path="/confirmation" component={Confirmation} />
         <Route path="/destination" component={Destination} />
+        <Route path="/packages" component={Packages} />
+        <Route path="/packages/book/:slug" component={PackageBooking} />
+        <Route path="/packages/:slug" component={PackageDetail} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
