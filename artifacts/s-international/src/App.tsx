@@ -21,6 +21,7 @@ import { Destination } from "@/pages/destination";
 import { Packages } from "@/pages/packages";
 import { PackageDetail } from "@/pages/package-detail";
 import { PackageBooking } from "@/pages/package-booking";
+import { Admin } from "@/pages/admin";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ function Router() {
         <Route path="/packages" component={Packages} />
         <Route path="/packages/book/:slug" component={PackageBooking} />
         <Route path="/packages/:slug" component={PackageDetail} />
+        <Route path="/admin" component={Admin} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

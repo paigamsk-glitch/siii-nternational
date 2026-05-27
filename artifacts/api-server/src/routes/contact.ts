@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, contactInquiriesTable } from "@workspace/db";
+import { desc } from "drizzle-orm";
 import { SubmitContactBody } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -75,6 +76,19 @@ router.post("/contact", async (req, res): Promise<void> => {
   res.status(201).json({
     message: "Thank you for reaching out! Our travel specialists will get back to you within 24 hours.",
   });
+});
+
+router.get("/admin/inquiries", async (req, res): Promise<void> => {
+  const { key } = req.query;
+  if (key !== "admin2024") {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const inquiries = await db
+    .select()
+    .from(contactInquiriesTable)
+    .orderBy(desc(contactInquiriesTable.createdAt));
+  res.json({ inquiries });
 });
 
 export default router;

@@ -537,5 +537,19 @@ export function searchHotels(params: {
 }
 
 export function getHotelById(id: string) {
-  return hotelsData.find(h => h.id === id || h.slug === id) ?? null;
+  const found = hotelsData.find(h => h.id === id || h.slug === id);
+  if (found) return found;
+
+  if (id.startsWith("GEN-HTL-")) {
+    const parts = id.split("-");
+    const idxStr = parts[parts.length - 1];
+    const idx = parseInt(idxStr, 10);
+    const destination = parts.slice(2, parts.length - 1)
+      .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+      .join(" ");
+    const hotels = generateDynamicHotels(destination);
+    return hotels[idx] ?? hotels[0] ?? null;
+  }
+
+  return null;
 }

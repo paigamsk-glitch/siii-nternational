@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, bookingsTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { CreateBookingBody, GetBookingByIdParams } from "@workspace/api-zod";
 import { getUserFromToken, getTokenFromRequest } from "../lib/auth";
 import { flightsData } from "../data/flights";
@@ -91,6 +91,39 @@ router.get("/bookings", async (req, res): Promise<void> => {
 
   res.json({
     bookings: bookings.map((b) => ({
+      id: b.id,
+      userId: b.userId,
+      type: b.type,
+      itemId: b.itemId,
+      travelers: b.travelers,
+      checkIn: b.checkIn,
+      checkOut: b.checkOut,
+      contactName: b.contactName,
+      contactEmail: b.contactEmail,
+      contactPhone: b.contactPhone,
+      totalAmount: Number(b.totalAmount),
+      currency: b.currency,
+      status: b.status,
+      paymentStatus: b.paymentStatus,
+      itemDetails: b.itemDetails,
+      notes: b.notes,
+      createdAt: b.createdAt.toISOString(),
+    })),
+  });
+});
+
+router.get("/admin/bookings", async (req, res): Promise<void> => {
+  const { key } = req.query;
+  if (key !== "admin2024") {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const allBookings = await db
+    .select()
+    .from(bookingsTable)
+    .orderBy(desc(bookingsTable.createdAt));
+  res.json({
+    bookings: allBookings.map((b) => ({
       id: b.id,
       userId: b.userId,
       type: b.type,
