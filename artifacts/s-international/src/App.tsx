@@ -9,6 +9,7 @@ import { Layout } from "@/components/layout";
 import { Home } from "@/pages/home";
 import { Flights } from "@/pages/flights";
 import { Hotels } from "@/pages/hotels";
+import { HotelDetail } from "@/pages/hotel-detail";
 import { Contact } from "@/pages/contact";
 import { Login } from "@/pages/login";
 import { Signup } from "@/pages/signup";
@@ -30,6 +31,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/flights" component={Flights} />
         <Route path="/hotels" component={Hotels} />
+        <Route path="/hotels/:id" component={HotelDetail} />
         <Route path="/contact" component={Contact} />
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
