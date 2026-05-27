@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Plane, Building2, Map } from "lucide-react";
+import { Plane, Building2, Package } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -18,7 +17,7 @@ export function HeroSearch() {
   const [flightFrom, setFlightFrom] = useState("");
   const [flightTo, setFlightTo] = useState("");
   const [hotelDest, setHotelDest] = useState("");
-  const [holidayDest, setHolidayDest] = useState("");
+  const [pkgDest, setPkgDest] = useState("");
 
   const handleFlightSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,15 +36,15 @@ export function HeroSearch() {
     setLocation(`/hotels?${params.toString()}`);
   };
 
-  const handleHolidaySearch = (e: React.FormEvent) => {
+  const handlePackageSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
-    if (holidayDest) params.append("destination", holidayDest);
-    setLocation(`/holidays?${params.toString()}`);
+    if (pkgDest) params.append("q", pkgDest);
+    setLocation(`/packages?${params.toString()}`);
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto -mt-24 relative z-10 bg-card rounded-xl shadow-xl p-4 md:p-6 border border-border">
+    <div className="w-full max-w-4xl mx-auto -mt-24 relative z-10 bg-card rounded-2xl shadow-2xl p-4 md:p-6 border border-border">
       <Tabs defaultValue="flights" className="w-full">
         <TabsList className="grid w-full max-w-md grid-cols-3 mb-6 bg-muted/50 p-1">
           <TabsTrigger value="flights" className="data-[state=active]:bg-background data-[state=active]:text-primary rounded-md">
@@ -56,9 +55,9 @@ export function HeroSearch() {
             <Building2 className="w-4 h-4 mr-2" />
             Hotels
           </TabsTrigger>
-          <TabsTrigger value="holidays" className="data-[state=active]:bg-background data-[state=active]:text-primary rounded-md">
-            <Map className="w-4 h-4 mr-2" />
-            Holidays
+          <TabsTrigger value="packages" className="data-[state=active]:bg-background data-[state=active]:text-primary rounded-md">
+            <Package className="w-4 h-4 mr-2" />
+            Packages
           </TabsTrigger>
         </TabsList>
 
@@ -160,16 +159,16 @@ export function HeroSearch() {
           </form>
         </TabsContent>
 
-        <TabsContent value="holidays" className="mt-0">
-          <form onSubmit={handleHolidaySearch} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <TabsContent value="packages" className="mt-0">
+          <form onSubmit={handlePackageSearch} className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2 md:col-span-3">
               <Label>Where do you want to go?</Label>
               <CityAutocomplete
-                id="holiday-destination"
+                id="pkg-destination"
                 name="destination"
-                placeholder="Country or Region"
-                value={holidayDest}
-                onChange={setHolidayDest}
+                placeholder="Bali, Maldives, Paris, Dubai..."
+                value={pkgDest}
+                onChange={setPkgDest}
               />
             </div>
             <div className="flex items-end">

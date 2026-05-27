@@ -62,7 +62,7 @@ export function Home() {
                 Explore our handpicked collection of the world's most captivating destinations, curated for the discerning traveler.
               </p>
             </div>
-            <Link href="/holidays" className="text-secondary font-medium flex items-center gap-2 hover:gap-3 transition-all mt-4 md:mt-0">
+            <Link href="/packages" className="text-secondary font-medium flex items-center gap-2 hover:gap-3 transition-all mt-4 md:mt-0">
               View all packages <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -275,11 +275,11 @@ export function Home() {
                       <div className="font-bold text-primary text-xl">{offer.discount}</div>
                       <button
                         onClick={() => {
-                          if (offer.id === "OFF001") setLocation("/holidays?theme=Beach");
+                          if (offer.id === "OFF001") setLocation("/packages");
                           else if (offer.id === "OFF002") setLocation("/flights?to=Goa");
                           else if (offer.id === "OFF003") setLocation("/hotels?promo=HOTEL20");
-                          else if (offer.id === "OFF004") setLocation("/holidays?theme=Romantic");
-                          else setLocation("/holidays");
+                          else if (offer.id === "OFF004") setLocation("/packages");
+                          else setLocation("/packages");
                         }}
                         className="text-sm font-medium hover:underline flex items-center gap-1"
                       >

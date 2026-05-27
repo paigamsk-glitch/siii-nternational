@@ -105,8 +105,8 @@ export function Bookings() {
               <Link href="/flights">
                 <Button className="w-full sm:w-auto hover-elevate">Book a Flight</Button>
               </Link>
-              <Link href="/holidays">
-                <Button variant="outline" className="w-full sm:w-auto">Explore Holidays</Button>
+              <Link href="/packages">
+                <Button variant="outline" className="w-full sm:w-auto">Explore Packages</Button>
               </Link>
             </div>
           </div>
