@@ -17,7 +17,12 @@ const signupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  phone: z.string().optional(),
+  phone: z.string()
+    .optional()
+    .refine(
+      (val) => !val || /^(\+91[\-\s]?)?[6-9]\d{9}$/.test(val.replace(/[\s\-]/g, "")),
+      { message: "Enter a valid Indian mobile number (10 digits, e.g. 9867860209)" }
+    ),
 });
 
 export function Signup() {
@@ -112,7 +117,7 @@ export function Signup() {
                   <FormItem>
                     <FormLabel>Phone Number <span className="text-muted-foreground font-normal">(Optional)</span></FormLabel>
                     <FormControl>
-                      <Input placeholder="+1 (555) 000-0000" className="h-12" {...field} />
+                      <Input placeholder="+91 9867860209" className="h-12" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

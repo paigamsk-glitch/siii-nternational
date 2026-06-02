@@ -104,6 +104,44 @@ const DESTINATION_PACKAGES: Record<string, {
   },
 };
 
+const HIGHLIGHT_DESCRIPTIONS: Record<string, string> = {
+  "Tegallalang Rice Terraces": "Iconic stepped rice paddies carved into the hillsides — best visited at sunrise for golden reflections in the water channels.",
+  "Tanah Lot Temple": "A dramatic sea temple perched on a rocky outcrop, surrounded by ocean waves — most magical at sunset.",
+  "Ubud Monkey Forest": "A sacred sanctuary home to over 700 long-tailed macaques set within an ancient Hindu temple complex.",
+  "Seminyak Beach": "Bali's most glamorous stretch of sand, lined with sunset beach clubs, boutiques, and world-class surf breaks.",
+  "Kecak Fire Dance": "A mesmerizing Balinese cultural performance where a choir of 50+ men chant rhythmically around a blazing fire.",
+  "Eiffel Tower": "The world's most photographed iron lattice tower, offering panoramic views of Paris from its three observation decks.",
+  "Louvre Museum": "The world's largest art museum and a historic monument, home to 35,000 works including the Mona Lisa.",
+  "Notre Dame Cathedral": "A masterpiece of French Gothic architecture on the Île de la Cité, famous for its rose windows and gargoyles.",
+  "Montmartre": "Paris's bohemian hilltop neighbourhood where Picasso and Monet once lived — crowned by the white-domed Sacré-Cœur.",
+  "Seine River Cruise": "An hour-long boat journey past 37 bridges, the Eiffel Tower, and Notre Dame — wonderful at dusk.",
+  "Overwater Bungalows": "Private villas perched above crystal-clear lagoons with glass floors, direct ocean access, and stunning sunrise views.",
+  "Coral Reef Snorkeling": "Dive into the world's third-largest coral reef system, home to sea turtles, rays, and thousands of tropical fish.",
+  "Private Sandbank": "A personal desert island experience — picnic on a pristine sandbar surrounded by turquoise ocean on all sides.",
+  "Underwater Restaurant": "Dine 5 metres below the ocean surface with panoramic views of the reef through floor-to-ceiling glass panels.",
+  "Dolphin Cruises": "Early morning boat trip to spot spinner dolphins in their natural habitat as they ride the bow waves.",
+  "Burj Khalifa Summit": "Ascend to the 148th-floor observation deck of the world's tallest building for 360° views of Dubai and beyond.",
+  "Desert Safari": "A thrilling dune-bashing 4x4 adventure followed by a camp dinner under the stars with belly dancing and shisha.",
+  "Dubai Frame": "Step inside a giant 150m picture frame bridging old and new Dubai — with a glass-floored sky bridge at the top.",
+  "Gold Souk": "A dazzling labyrinth of 380 jewellers selling gold, silver, and diamonds in the heart of Deira.",
+  "Dubai Mall & Aquarium": "Shop at the world's largest mall then watch sharks and rays glide past in a 10-million-litre tank.",
+  "Calangute Beach": "Goa's 'Queen of Beaches' — a golden arc of sand stretching 7km, popular for water sports and beach shacks.",
+  "Fort Aguada": "A 17th-century Portuguese sea fort commanding dramatic coastal views, with a lighthouse still in operation.",
+  "Dudhsagar Waterfalls": "A four-tiered cascade tumbling 310m down jungle cliffs — most spectacular after the monsoon season.",
+  "Spice Plantation": "Walk through fragrant groves of cardamom, vanilla, and pepper on a guided plantation tour with a farm lunch.",
+  "Anjuna Market": "Goa's legendary Wednesday flea market with hundreds of stalls selling clothing, jewellery, and local handicrafts.",
+  "Mt Fuji Day Trip": "A day excursion from Tokyo to Japan's iconic snow-capped volcano — perfect backdrop for landscapes and photos.",
+  "Shibuya Crossing": "The world's busiest pedestrian crossing where up to 3,000 people cross simultaneously from all directions.",
+  "Fushimi Inari Shrine": "A tunnel of 10,000 vermillion torii gates winding through the forested slopes of Mount Inari.",
+  "Nara Deer Park": "Walk freely among 1,200 sacred deer that roam the ancient temples and grounds of Japan's former capital.",
+  "Tsukiji Fish Market": "Tokyo's legendary seafood bazaar — arrive early for a fresh sushi breakfast and watch tuna auctions.",
+  "Guided City Tours": "Explore the city's iconic landmarks, hidden gems, and cultural hotspots led by expert local guides.",
+  "Cultural Experiences": "Immerse yourself in local traditions through cooking classes, craft workshops, and community visits.",
+  "Local Cuisine": "Savour authentic flavours at top-rated local restaurants, street food stalls, and traditional eateries.",
+  "Historical Sites": "Discover ancient ruins, heritage monuments, and UNESCO World Heritage sites with expert commentary.",
+  "Natural Wonders": "Marvel at breathtaking landscapes — from waterfalls and canyons to forests and mountain vistas.",
+};
+
 const DEFAULT_PACKAGE = {
   highlights: ["Guided City Tours", "Cultural Experiences", "Local Cuisine", "Historical Sites", "Natural Wonders"],
   bestTime: "Year-round",
@@ -134,7 +172,7 @@ export function Destination() {
   const info = DESTINATION_PACKAGES[destName] || DEFAULT_PACKAGE;
 
   if (!dest && !destName) {
-    setLocation("/holidays");
+    setLocation("/destinations");
     return null;
   }
 
@@ -215,11 +253,16 @@ export function Destination() {
               <h2 className="text-2xl font-serif font-bold mb-6">Top Highlights</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {info.highlights.map((h, i) => (
-                  <div key={h} className="flex items-center gap-3 p-4 bg-card border border-border rounded-lg">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
+                  <div key={h} className="flex gap-3 p-4 bg-card border border-border rounded-xl hover:shadow-md transition-shadow">
+                    <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shrink-0 mt-0.5">
                       {i + 1}
                     </div>
-                    <span className="font-medium text-sm">{h}</span>
+                    <div>
+                      <p className="font-semibold text-sm mb-1">{h}</p>
+                      {HIGHLIGHT_DESCRIPTIONS[h] && (
+                        <p className="text-xs text-muted-foreground leading-relaxed">{HIGHLIGHT_DESCRIPTIONS[h]}</p>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -252,7 +295,7 @@ export function Destination() {
                         ₹{pkg.price.toLocaleString("en-IN")}
                       </div>
                       <div className="text-xs text-muted-foreground mb-3">per person</div>
-                      <Button size="sm" onClick={() => setLocation(`/holidays?destination=${encodeURIComponent(displayName)}`)}>
+                      <Button size="sm" onClick={() => setLocation(`/packages`)}>
                         Book Now
                       </Button>
                     </div>
@@ -317,7 +360,7 @@ export function Destination() {
               <div className="space-y-3 mb-6">
                 <Button
                   className="w-full"
-                  onClick={() => setLocation(`/holidays?destination=${encodeURIComponent(displayName)}`)}
+                  onClick={() => setLocation(`/packages`)}
                 >
                   Browse Packages <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>

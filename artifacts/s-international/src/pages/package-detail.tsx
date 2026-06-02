@@ -408,11 +408,16 @@ export function PackageDetail() {
               </div>
 
               {/* Contact Card */}
-              <div className="bg-muted/30 border border-border rounded-xl p-4 text-center">
-                <p className="text-sm text-muted-foreground mb-2">Need help planning?</p>
+              <div className="bg-gradient-to-br from-secondary/20 to-secondary/10 border-2 border-secondary/40 rounded-xl p-5 text-center">
+                <div className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Users className="w-5 h-5 text-secondary-foreground" />
+                </div>
+                <p className="font-semibold text-base mb-1">Talk to a Travel Expert</p>
+                <p className="text-xs text-muted-foreground mb-4">Our specialists are available 7 days a week to help craft your perfect trip.</p>
                 <Link href="/contact">
-                  <Button variant="outline" className="w-full text-sm">Talk to a Travel Expert</Button>
+                  <Button className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold rounded-xl">Contact Us</Button>
                 </Link>
+                <a href="tel:+919867860209" className="block mt-2 text-xs text-muted-foreground hover:text-secondary transition-colors">📞 +91 98678 60209</a>
               </div>
             </div>
           </div>

@@ -110,12 +110,12 @@ export function Flights() {
   return (
     <div className="min-h-screen pb-20" style={{ background: "hsl(232 22% 97%)" }}>
       {/* Hero search bar */}
-      <div className="bg-primary text-primary-foreground pt-10 pb-16 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10" style={{
+      <div className="text-white pt-10 pb-16 relative overflow-hidden">
+        <div className="absolute inset-0" style={{
           backgroundImage: "url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2000&auto=format&fit=crop')",
           backgroundSize: "cover", backgroundPosition: "center"
         }} />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/80 to-primary" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex items-center gap-3 mb-2">
             <Plane className="w-6 h-6 text-secondary" />

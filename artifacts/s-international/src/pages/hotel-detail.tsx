@@ -288,12 +288,26 @@ export function HotelDetail() {
                   <p className="text-muted-foreground text-sm">{hotel.destination}, {hotel.country}</p>
                 </div>
               </div>
-              <div className="h-40 bg-gradient-to-br from-muted to-muted/50 rounded-xl flex items-center justify-center border border-border">
-                <div className="text-center text-muted-foreground">
-                  <MapPin className="w-8 h-8 mx-auto mb-2 text-primary/40" />
-                  <p className="text-sm font-medium">{hotel.destination}</p>
-                </div>
+              <div className="rounded-xl overflow-hidden border border-border h-52">
+                <iframe
+                  title="Hotel Location"
+                  width="100%"
+                  height="100%"
+                  loading="lazy"
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(hotel.address + ', ' + hotel.destination + ', ' + hotel.country)}&output=embed&z=15`}
+                  className="w-full h-full border-0"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
               </div>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotel.address + ', ' + hotel.destination)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 mt-2 text-xs text-primary hover:underline"
+              >
+                <MapPin className="w-3.5 h-3.5" />
+                Open in Google Maps
+              </a>
             </motion.div>
           </div>
 
@@ -367,9 +381,11 @@ export function HotelDetail() {
               <div className="bg-white rounded-2xl border border-border p-4">
                 <p className="text-sm font-semibold mb-2">Need help choosing?</p>
                 <p className="text-xs text-muted-foreground mb-3">Our travel experts are available 24/7 to assist you.</p>
-                <Button variant="outline" className="w-full rounded-xl border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground text-sm">
-                  <Phone className="w-4 h-4 mr-2" /> Contact Expert
-                </Button>
+                <a href="tel:+919867860209" className="block">
+                  <Button variant="outline" className="w-full rounded-xl border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground text-sm">
+                    <Phone className="w-4 h-4 mr-2" /> Call Now: 9867860209
+                  </Button>
+                </a>
               </div>
             </div>
           </div>

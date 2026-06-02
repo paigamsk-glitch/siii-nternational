@@ -66,6 +66,8 @@ const PAYMENT_COLORS: Record<string, string> = {
 export function Admin() {
   const [authed, setAuthed] = useState(false);
   const [pin, setPin] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
   const [pinError, setPinError] = useState(false);
   const [activeTab, setActiveTab] = useState<"dashboard" | "inquiries" | "bookings">("dashboard");
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
@@ -76,7 +78,12 @@ export function Admin() {
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
   const handleLogin = () => {
-    if (pin === "admin2024" || pin === "admin") {
+    const validCredentials = [
+      { email: "paigam785@gmail.com", password: "Shaikh@3786" },
+      { email: "admin@sinternational.com", password: "admin2024" },
+    ];
+    const emailMatch = validCredentials.find(c => c.email === adminEmail && c.password === adminPassword);
+    if (emailMatch || pin === "admin2024" || pin === "admin") {
       setAuthed(true);
       fetchData();
     } else {
@@ -135,18 +142,26 @@ export function Admin() {
           <h1 className="text-2xl font-serif font-bold mb-1">Admin Panel</h1>
           <p className="text-muted-foreground text-sm mb-8">S International Travel — Restricted Access</p>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
+            <Input
+              type="email"
+              value={adminEmail}
+              onChange={e => setAdminEmail(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleLogin()}
+              placeholder="Admin email address"
+              className={`bg-muted/40 rounded-xl h-12 text-sm transition-all ${pinError ? "border-destructive ring-2 ring-destructive/20" : ""}`}
+            />
             <Input
               type="password"
-              value={pin}
-              onChange={e => setPin(e.target.value)}
+              value={adminPassword}
+              onChange={e => setAdminPassword(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handleLogin()}
-              placeholder="Enter admin password"
-              className={`text-center bg-muted/40 rounded-xl h-12 text-base font-mono tracking-widest transition-all ${pinError ? "border-destructive ring-2 ring-destructive/20" : ""}`}
+              placeholder="Password"
+              className={`bg-muted/40 rounded-xl h-12 text-sm transition-all ${pinError ? "border-destructive ring-2 ring-destructive/20" : ""}`}
             />
             {pinError && (
               <motion.p initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="text-destructive text-sm font-semibold">
-                Incorrect password. Please try again.
+                Incorrect email or password. Please try again.
               </motion.p>
             )}
             <Button onClick={handleLogin} className="w-full h-12 rounded-xl font-bold bg-primary hover:bg-primary/90">

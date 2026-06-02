@@ -67,12 +67,12 @@ export function Packages() {
   return (
     <div className="bg-background min-h-screen pb-24">
       {/* Hero */}
-      <div className="relative bg-primary pt-20 pb-32 overflow-hidden">
+      <div className="relative pt-20 pb-32 overflow-hidden">
         <div
-          className="absolute inset-0 opacity-15 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2000&auto=format&fit=crop')" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/80 to-primary" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/55 to-black/70" />
         <div className="container mx-auto px-4 relative z-10 text-center max-w-3xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
