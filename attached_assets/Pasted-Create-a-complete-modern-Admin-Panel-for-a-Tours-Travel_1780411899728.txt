@@ -1,0 +1,132 @@
+Create a complete modern Admin Panel for a Tours & Travel Booking Website.
+
+Main Goal:
+The admin should be able to manage travel packages, hotels, destinations, bookings, users, images, activities, and website content from the admin dashboard. When admin adds or updates packages/hotels, they should automatically appear on the main website in the correct sections.
+
+Tech Stack:
+
+React + Vite
+Tailwind CSS
+Node.js + Express
+MongoDB
+JWT Authentication
+Cloudinary or local image upload
+React Router
+Axios
+Framer Motion
+
+Admin Login:
+Create secure admin login system.
+
+Admin Credentials:
+Email: paigam785@gmail.com
+Password: Shaikh@#786
+
+Only this admin account should access the admin dashboard.
+
+Admin Panel Features:
+
+Dashboard
+Total packages
+Total hotels
+Total bookings
+Total users
+Revenue stats
+Recent bookings
+Quick actions. Package Management
+Admin can:
+Add new holiday package
+Edit package
+Delete package
+Upload multiple package images
+Add package title
+Add destination
+Add duration (example: 4N/5D)
+Add package price
+Add offer price
+Add package overview
+Add highlights
+Add inclusions/exclusions
+Add day-wise itinerary
+Add activities
+Add meals
+Add transfers
+Add hotel details
+Add package category
+Add ratings
+Mark as featured/trending
+Publish/unpublish package
+Hotel Management
+Admin can:
+Add hotels
+Upload hotel images
+Add hotel name
+Hotel type/star rating
+Location
+Amenities
+Room types
+Price per night
+Description
+Gallery images
+Availability status
+Destination Management
+Admin can:
+Add destinations
+Upload destination banners/images
+Add destination description
+Add best time to visit
+Add attractions. Booking Management
+Admin can:
+View all bookings
+Update booking status
+Confirm/cancel bookings
+View payment status
+Search/filter bookings
+Download invoice
+User Management
+Admin can:
+View users
+Block/unblock users
+View booking history
+Image Upload System
+Drag & drop upload
+Multiple image upload
+Preview before upload
+Image gallery management
+Website CMS Controls
+Admin can manage:
+Homepage banners
+Hero sections
+Offers
+Testimonials
+Popular destinations
+Featured packages
+Notifications
+Booking alerts
+New enquiry alerts
+Dashboard notifications. UI/UX
+Modern premium admin dashboard
+Sidebar navigation
+Responsive design
+Dark/light mode
+Charts and analytics
+Clean tables and forms
+Modal forms
+Loading animations
+Database Structure
+Create proper MongoDB schemas for:
+Users
+Packages
+Hotels
+Bookings
+Destinations
+Reviews
+Enquiries
+Important
+Use reusable components
+Use protected admin routes
+Form validation required
+Use clean folder structure
+Make everything dynamic from database
+Admin-added data should instantly appear on frontend website
+Add sample dummy data. ***** also change the background of the holiday section as shown in the image give some buetiful image . **********also that whatsapp icon should on the left hand side of the page

@@ -31,31 +31,38 @@ const queryClient = new QueryClient();
 
 function Router() {
   return (
-    <Layout>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/flights" component={Flights} />
-        <Route path="/hotels" component={Hotels} />
-        <Route path="/hotels/:id" component={HotelDetail} />
-        <Route path="/contact" component={Contact} />
-        <Route path="/login" component={Login} />
-        <Route path="/signup" component={Signup} />
-        <Route path="/bookings" component={Bookings} />
-        <Route path="/checkout" component={Checkout} />
-        <Route path="/payment" component={Payment} />
-        <Route path="/confirmation" component={Confirmation} />
-        <Route path="/destination" component={Destination} />
-        <Route path="/packages" component={Packages} />
-        <Route path="/packages/book/:slug" component={PackageBooking} />
-        <Route path="/packages/:slug" component={PackageDetail} />
-        <Route path="/admin" component={Admin} />
-        <Route path="/destinations" component={Destinations} />
-        <Route path="/faq" component={FAQ} />
-        <Route path="/terms" component={Terms} />
-        <Route path="/privacy" component={Privacy} />
-        <Route component={NotFound} />
-      </Switch>
-    </Layout>
+    <Switch>
+      {/* Admin — standalone, no site header/footer */}
+      <Route path="/admin" component={Admin} />
+
+      {/* All other pages wrapped in site Layout */}
+      <Route>
+        <Layout>
+          <Switch>
+            <Route path="/" component={Home} />
+            <Route path="/flights" component={Flights} />
+            <Route path="/hotels" component={Hotels} />
+            <Route path="/hotels/:id" component={HotelDetail} />
+            <Route path="/contact" component={Contact} />
+            <Route path="/login" component={Login} />
+            <Route path="/signup" component={Signup} />
+            <Route path="/bookings" component={Bookings} />
+            <Route path="/checkout" component={Checkout} />
+            <Route path="/payment" component={Payment} />
+            <Route path="/confirmation" component={Confirmation} />
+            <Route path="/destination" component={Destination} />
+            <Route path="/packages" component={Packages} />
+            <Route path="/packages/book/:slug" component={PackageBooking} />
+            <Route path="/packages/:slug" component={PackageDetail} />
+            <Route path="/destinations" component={Destinations} />
+            <Route path="/faq" component={FAQ} />
+            <Route path="/terms" component={Terms} />
+            <Route path="/privacy" component={Privacy} />
+            <Route component={NotFound} />
+          </Switch>
+        </Layout>
+      </Route>
+    </Switch>
   );
 }
 

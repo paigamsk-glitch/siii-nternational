@@ -7,6 +7,7 @@ import holidaysRouter from "./holidays";
 import bookingsRouter from "./bookings";
 import paymentsRouter from "./payments";
 import contactRouter from "./contact";
+import adminRouter from "./admin";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(holidaysRouter);
 router.use(bookingsRouter);
 router.use(paymentsRouter);
 router.use(contactRouter);
+router.use(adminRouter);
 
 export default router;
