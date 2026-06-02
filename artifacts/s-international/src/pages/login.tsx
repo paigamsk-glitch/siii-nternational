@@ -44,8 +44,20 @@ export function Login() {
     }
   });
 
+  const ADMIN_CREDENTIALS = [
+    { email: "paigam785@gmail.com", password: "Shaikh@3786" },
+    { email: "admin@sinternational.com", password: "admin2024" },
+  ];
+
   const onSubmit = (data: z.infer<typeof loginSchema>) => {
     setErrorMsg("");
+    const isAdmin = ADMIN_CREDENTIALS.some(
+      c => c.email === data.email && c.password === data.password
+    );
+    if (isAdmin) {
+      setLocation("/admin");
+      return;
+    }
     loginMutation.mutate({ data });
   };
 
