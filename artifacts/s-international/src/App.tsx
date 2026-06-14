@@ -34,6 +34,7 @@ import { LiveTrainStatus } from "@/pages/live-status";
 import { Visa } from "@/pages/visa";
 import { VisaDetail } from "@/pages/visa-detail";
 import { VisaStatus } from "@/pages/visa-status";
+import { Forex } from "@/pages/forex";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +75,7 @@ function Router() {
             <Route path="/visa" component={Visa} />
             <Route path="/visa/status" component={VisaStatus} />
             <Route path="/visa/:countryCode" component={VisaDetail} />
+            <Route path="/forex" component={Forex} />
             <Route component={NotFound} />
           </Switch>
         </Layout>

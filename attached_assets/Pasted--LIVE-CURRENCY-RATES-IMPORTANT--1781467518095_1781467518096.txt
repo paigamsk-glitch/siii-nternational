@@ -1,0 +1,106 @@
+=================================
+LIVE CURRENCY RATES (IMPORTANT)
+=================================
+
+Create a "Today's Exchange Rates" section.
+
+The rates should NOT be hardcoded.
+
+Fetch live exchange rates automatically from a currency exchange API.
+
+Update rates every few minutes.
+
+Display a professional rate table.
+
+Table Format:
+
+| Currency | Code | Buy Rate (INR) | Sell Rate (INR) |
+|-----------|------|---------------|----------------|
+| US Dollar | USD | Live Rate | Live Rate |
+| Euro | EUR | Live Rate | Live Rate |
+| British Pound | GBP | Live Rate | Live Rate |
+| UAE Dirham | AED | Live Rate | Live Rate |
+| Saudi Riyal | SAR | Live Rate | Live Rate |
+| Singapore Dollar | SGD | Live Rate | Live Rate |
+| Australian Dollar | AUD | Live Rate | Live Rate |
+| Canadian Dollar | CAD | Live Rate | Live Rate |
+| Japanese Yen | JPY | Live Rate | Live Rate |
+| Thai Baht | THB | Live Rate | Live Rate |
+| Swiss Franc | CHF | Live Rate | Live Rate |
+| Qatar Riyal | QAR | Live Rate | Live Rate |
+| Omani Rial | OMR | Live Rate | Live Rate |
+| Kuwaiti Dinar | KWD | Live Rate | Live Rate |
+
+Show:
+- Last Updated Time
+- Source of Rate
+- Refresh Button
+- Currency Search Box
+
+=================================
+FOREX CALCULATOR
+=================================
+
+Create a live forex calculator.
+
+User selects:
+- Buy or Sell
+- Currency
+- Quantity
+
+System automatically calculates:
+
+Amount × Current Rate
+
+and displays:
+
+Estimated INR Amount
+
+=================================
+ADMIN CONTROL
+=================================
+
+Allow admin to:
+
+- Set Buy Margin (%)
+- Set Sell Margin (%)
+- Override API rates manually
+- Enable or disable currencies
+- Update rates manually if API fails
+
+=================================
+TRAVEL FOREX SERVICES
+=================================
+
+Display service cards:
+
+✓ Buy Foreign Currency
+✓ Sell Foreign Currency
+✓ Forex Travel Cards
+✓ Forex Card Reload
+✓ International Remittance
+✓ Student Forex Services
+✓ Business Travel Forex
+
+=================================
+IMPORTANT LEGAL NOTICE
+=================================
+
+Display:
+
+"Exchange rates are indicative and subject to market fluctuations. Final rates will be confirmed after KYC verification and booking confirmation as per RBI/FEMA guidelines."
+
+=================================
+API RECOMMENDATION
+=================================
+
+Use one of the following APIs:
+
+- ExchangeRate API
+- CurrencyFreaks API
+- Open Exchange Rates API
+- Fixer API
+
+Store API key in environment variables.
+
+Do not expose API keys on frontend.

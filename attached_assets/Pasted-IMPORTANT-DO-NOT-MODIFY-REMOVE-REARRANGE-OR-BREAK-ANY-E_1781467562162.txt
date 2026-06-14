@@ -1,0 +1,274 @@
+IMPORTANT: DO NOT MODIFY, REMOVE, REARRANGE OR BREAK ANY EXISTING SECTION OF MY WEBSITE.
+
+My website is already fully designed and functional. I only want you to ADD ONE NEW FEATURE beside the existing Visa Services section.
+
+The new feature should be a "Foreign Currency Exchange & Forex Card Booking" section similar in functionality to Lulu Forex, but designed to match my website's existing colors, fonts, spacing, cards, buttons and overall design language.
+
+=================================
+GOAL
+=================================
+
+This section will allow travelers to:
+
+• Buy foreign currency before international travel
+• Sell unused foreign currency after returning to India
+• Purchase Forex Travel Cards
+• Reload existing Forex Cards
+• Submit Currency Exchange enquiries
+• Request exchange rate quotations
+
+This is NOT an online payment gateway.
+
+Users will submit their requirements and our team will contact them for verification and completion of the transaction according to RBI and KYC regulations.
+
+=================================
+LAYOUT REQUIREMENTS
+=================================
+
+1. Add the new Forex section beside the existing Visa Services section.
+
+2. Do NOT move or resize any existing sections.
+
+3. Match the exact style of my current website.
+
+4. Desktop:
+   - Visa Services on left
+   - Forex Exchange on right
+
+5. Mobile:
+   - Stack sections vertically
+
+6. Maintain current website responsiveness.
+
+=================================
+SECTION TITLE
+=================================
+
+Foreign Currency Exchange
+
+Subtitle:
+
+Buy, Sell and Reload Foreign Currency & Forex Travel Cards for International Travel.
+
+=================================
+SERVICE TYPES
+=================================
+
+Create tabs:
+
+1. BUY CURRENCY
+2. SELL CURRENCY
+3. FOREX CARD
+
+=================================
+BUY CURRENCY FORM
+=================================
+
+Fields:
+
+Current City
+Destination Country
+Currency Required
+Travel Date
+Quantity Required
+Traveller Name
+Mobile Number
+Email Address
+Passport Number
+Remarks
+
+Button:
+
+Get Best Exchange Rate
+
+=================================
+SELL CURRENCY FORM
+=================================
+
+Fields:
+
+Current City
+Currency Available
+Quantity Available
+Traveller Name
+Mobile Number
+Email
+Remarks
+
+Button:
+
+Sell Currency
+
+=================================
+FOREX CARD FORM
+=================================
+
+Options:
+
+New Forex Card
+Reload Existing Forex Card
+
+Fields:
+
+Traveller Name
+Mobile Number
+Email
+Passport Number
+Travel Date
+Currency Required
+Amount Required
+
+Button:
+
+Apply for Forex Card
+
+=================================
+SUPPORTED CURRENCIES
+=================================
+
+USD - US Dollar
+EUR - Euro
+GBP - British Pound
+AED - UAE Dirham
+SAR - Saudi Riyal
+SGD - Singapore Dollar
+AUD - Australian Dollar
+CAD - Canadian Dollar
+JPY - Japanese Yen
+THB - Thai Baht
+CHF - Swiss Franc
+QAR - Qatar Riyal
+OMR - Omani Rial
+KWD - Kuwaiti Dinar
+
+=================================
+LIVE RATE DISPLAY
+=================================
+
+Create a professional exchange rate widget showing:
+
+USD
+EUR
+GBP
+AED
+SAR
+SGD
+
+Display:
+
+Currency
+Buy Rate
+Sell Rate
+
+Allow admin to update rates from admin panel.
+
+=================================
+FOREX CALCULATOR
+=================================
+
+Add calculator:
+
+Amount
+Currency
+
+Show:
+
+Estimated INR Value
+
+Formula:
+
+Amount × Exchange Rate
+
+Update instantly.
+
+=================================
+BOOKING PROCESS
+=================================
+
+When user submits:
+
+1. Save data to database
+2. Send enquiry to admin panel
+3. Show success popup
+
+Message:
+
+"Thank you. Your Forex request has been received. Our team will contact you shortly with the latest exchange rate and verification requirements."
+
+=================================
+DATABASE TABLE
+=================================
+
+Create:
+
+forex_enquiries
+
+Fields:
+
+id
+service_type
+name
+email
+mobile
+city
+currency
+amount
+passport_number
+travel_date
+remarks
+created_at
+
+=================================
+ADMIN PANEL
+=================================
+
+Create admin section:
+
+Forex Enquiries
+
+Features:
+
+View enquiries
+Search enquiries
+Filter by service type
+Filter by date
+Mark as contacted
+Export CSV
+
+=================================
+COMPLIANCE NOTICE
+=================================
+
+Show small disclaimer:
+
+"Foreign currency exchange services are subject to applicable RBI guidelines, KYC verification and documentation requirements."
+
+=================================
+UI DESIGN
+=================================
+
+Requirements:
+
+- Premium banking style
+- Professional travel industry look
+- Glassmorphism effects where suitable
+- Smooth animations
+- Rounded corners
+- Mobile responsive
+- Fast loading
+- Match existing website design perfectly
+
+=================================
+VERY IMPORTANT
+=================================
+
+DO NOT:
+
+- Change header
+- Change footer
+- Change navigation
+- Change existing Visa section
+- Change existing page layout
+- Remove any functionality
+
+ONLY ADD this Forex Exchange module and integrate it seamlessly into the current website.
