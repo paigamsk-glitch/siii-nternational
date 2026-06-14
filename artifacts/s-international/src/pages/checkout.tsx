@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import {
   Plane, Building2, Map, ShieldCheck, User, Clock, Luggage,
   Utensils, Wifi, Star, MapPin, Calendar, Moon, Users,
-  CheckCircle2, ArrowRight, CreditCard, Lock
+  CheckCircle2, ArrowRight, CreditCard, Lock, Train
 } from "lucide-react";
 import {
   useGetSession, getGetSessionQueryKey,
@@ -82,6 +82,7 @@ export function Checkout() {
   if (type === "flight") price = (item as any).price * (searchParams.tripType === "round-trip" ? 1.9 : 1) * travelers;
   else if (type === "hotel") price = (item as any).pricePerNight * (searchParams.rooms || 1);
   else if (type === "holiday") price = (item as any).price * travelers;
+  else if ((type as any) === "train") price = (item as any).price * travelers;
 
   const taxes = Math.round(price * 0.15);
   const total = price + taxes;
@@ -143,6 +144,7 @@ export function Checkout() {
             {type === "flight" && <FlightCard item={item as any} searchParams={searchParams} sym={sym} />}
             {type === "hotel" && <HotelCard item={item as any} searchParams={searchParams} sym={sym} />}
             {type === "holiday" && <PackageCard item={item as any} travelers={travelers} sym={sym} />}
+            {(type as any) === "train" && <TrainCard item={item as any} searchParams={searchParams} sym={sym} />}
 
             {/* Sign in prompt */}
             {!session?.authenticated && (
@@ -450,6 +452,87 @@ function HotelCard({ item, searchParams, sym }: { item: any; searchParams: any; 
                 <CheckCircle2 className="w-3 h-3 text-accent" />{a}
               </div>
             ))}
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+function TrainCard({ item, searchParams, sym }: { item: any; searchParams: any; sym: string }) {
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-2xl overflow-hidden">
+      <div className="bg-gradient-to-r from-primary/8 to-secondary/5 px-6 py-4 border-b border-border flex items-center gap-3">
+        <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+          <Train className="w-5 h-5 text-primary" />
+        </div>
+        <div>
+          <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Train Booking</div>
+          <div className="font-serif font-bold">{item.from} → {item.to}</div>
+        </div>
+        <Badge className="ml-auto bg-accent/10 text-accent border-0 text-xs font-bold">
+          {item.trainType}
+        </Badge>
+      </div>
+
+      <div className="p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 rounded-xl bg-primary/8 border border-primary/10 flex items-center justify-center">
+            <Train className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <div className="font-bold">{item.trainName}</div>
+            <div className="text-sm text-muted-foreground font-mono">#{item.trainNumber} · {item.className}</div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between mb-6 bg-muted/30 rounded-2xl p-5">
+          <div>
+            <div className="text-4xl font-bold">{item.departureTime}</div>
+            <div className="text-primary font-bold text-sm mt-0.5">{item.fromCode}</div>
+            <div className="text-muted-foreground text-xs">{item.from}</div>
+          </div>
+          <div className="flex-1 px-4 flex flex-col items-center gap-1.5">
+            <span className="text-xs text-muted-foreground font-medium">{item.duration}</span>
+            <div className="w-full flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full border-2 border-primary bg-white" />
+              <div className="flex-1 h-px bg-gradient-to-r from-primary to-secondary" />
+              <Train className="w-4 h-4 text-secondary" />
+              <div className="flex-1 h-px bg-gradient-to-r from-secondary to-primary" />
+              <div className="w-2 h-2 rounded-full bg-primary" />
+            </div>
+            <span className="text-xs text-muted-foreground">Direct Train</span>
+          </div>
+          <div className="text-right">
+            <div className="text-4xl font-bold">{item.arrivalTime}</div>
+            <div className="text-primary font-bold text-sm mt-0.5">{item.toCode}</div>
+            <div className="text-muted-foreground text-xs">{item.to}</div>
+          </div>
+        </div>
+
+        {searchParams.date && (
+          <div className="flex items-center gap-6 mb-4 pb-4 border-b border-border">
+            <div className="flex items-center gap-2 text-sm">
+              <Calendar className="w-4 h-4 text-primary" />
+              <div>
+                <div className="text-muted-foreground text-xs">Journey Date</div>
+                <div className="font-semibold">{searchParams.date}</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Users className="w-4 h-4 text-accent" />
+              <div>
+                <div className="text-muted-foreground text-xs">Passengers</div>
+                <div className="font-semibold">{searchParams.travelers || 1}</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <CheckCircle2 className="w-4 h-4 text-green-500" />
+              <div>
+                <div className="text-muted-foreground text-xs">Class</div>
+                <div className="font-semibold">{item.className}</div>
+              </div>
+            </div>
           </div>
         )}
       </div>
