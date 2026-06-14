@@ -4,9 +4,11 @@ import { motion } from "framer-motion";
 import { ArrowRight, Star, Plane, Map, Clock, CheckCircle2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { travelPackages } from "@/data/packages";
+import { useCMS } from "@/hooks/useCMS";
 
 export function Home() {
   const [, setLocation] = useLocation();
+  const cms = useCMS();
   const { data: offersData, isLoading: loadingOffers } = useGetOffers({
     query: { queryKey: getGetOffersQueryKey() }
   });
@@ -22,7 +24,7 @@ export function Home() {
         <div className="absolute inset-0 bg-primary/20 z-10" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent z-10" />
         <img 
-          src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2000&auto=format&fit=crop" 
+          src={cms("hero_image", "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2000&auto=format&fit=crop")} 
           alt="Premium travel experience" 
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
@@ -34,7 +36,7 @@ export function Home() {
             transition={{ duration: 0.7 }}
             className="font-serif text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-lg"
           >
-            The Art of Travel
+            {cms("hero_title", "The Art of Travel")}
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -42,7 +44,7 @@ export function Home() {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto font-medium drop-shadow-md"
           >
-            Curated experiences for those who seek the extraordinary.
+            {cms("hero_subtitle", "Curated experiences for those who seek the extraordinary.")}
           </motion.p>
         </div>
       </section>
@@ -302,22 +304,22 @@ export function Home() {
               <div className="w-16 h-16 rounded-full bg-secondary/20 text-secondary flex items-center justify-center mb-6">
                 <Star className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-serif font-bold mb-3">Curated Excellence</h3>
-              <p className="text-primary-foreground/70">Every hotel, flight, and experience is rigorously vetted for quality and service.</p>
+              <h3 className="text-xl font-serif font-bold mb-3">{cms("trust_1_title", "Curated Excellence")}</h3>
+              <p className="text-primary-foreground/70">{cms("trust_1_desc", "Every hotel, flight, and experience is rigorously vetted for quality and service.")}</p>
             </div>
             <div className="flex flex-col items-center p-6">
               <div className="w-16 h-16 rounded-full bg-secondary/20 text-secondary flex items-center justify-center mb-6">
                 <Map className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-serif font-bold mb-3">Global Expertise</h3>
-              <p className="text-primary-foreground/70">Our travel concierges possess deep knowledge of destinations worldwide.</p>
+              <h3 className="text-xl font-serif font-bold mb-3">{cms("trust_2_title", "Global Expertise")}</h3>
+              <p className="text-primary-foreground/70">{cms("trust_2_desc", "Our travel concierges possess deep knowledge of destinations worldwide.")}</p>
             </div>
             <div className="flex flex-col items-center p-6">
               <div className="w-16 h-16 rounded-full bg-secondary/20 text-secondary flex items-center justify-center mb-6">
                 <Plane className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-serif font-bold mb-3">Seamless Journeys</h3>
-              <p className="text-primary-foreground/70">From inspiration to return, we handle every detail of your itinerary.</p>
+              <h3 className="text-xl font-serif font-bold mb-3">{cms("trust_3_title", "Seamless Journeys")}</h3>
+              <p className="text-primary-foreground/70">{cms("trust_3_desc", "From inspiration to return, we handle every detail of your itinerary.")}</p>
             </div>
           </div>
         </div>

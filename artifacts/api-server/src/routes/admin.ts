@@ -231,6 +231,14 @@ router.delete("/admin/inquiries/:id", async (req, res): Promise<void> => {
   res.json({ success: true });
 });
 
+// ── PUBLIC CMS READ (no auth required) ─────────────────────────────────────
+router.get("/cms", async (_req, res): Promise<void> => {
+  const content = await db.select().from(cmsContentTable);
+  const map: Record<string, any> = {};
+  content.forEach(item => { map[item.key] = item.value; });
+  res.json({ content: map });
+});
+
 // ── CMS CONTENT ────────────────────────────────────────────────────────────
 router.get("/admin/cms", async (_req, res): Promise<void> => {
   const content = await db.select().from(cmsContentTable);
