@@ -523,6 +523,15 @@ export function Forex() {
               <Button className="w-full font-bold py-5 text-base gap-2 rounded-xl">
                 Book now <ArrowRight className="h-4 w-4" />
               </Button>
+              <button
+                type="button"
+                onClick={() => {
+                  document.getElementById("forex-calculator")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className="w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-primary border-2 border-primary/30 hover:border-primary hover:bg-primary/5 rounded-xl transition-all"
+              >
+                <ArrowLeftRight className="h-4 w-4" /> Open Forex Calculator
+              </button>
               <p className="text-center text-xs text-muted-foreground">
                 By clicking Book Now, you agree to our{" "}
                 <a href="#" className="text-primary underline">T&amp;C</a>
@@ -874,7 +883,7 @@ export function Forex() {
             </div>
 
             {/* Forex Calculator */}
-            <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg">
+            <div id="forex-calculator" className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg scroll-mt-20">
               <div className="bg-primary px-5 py-4 text-primary-foreground flex items-center gap-2">
                 <ArrowLeftRight className="h-4 w-4" />
                 <h3 className="font-bold text-sm">Forex Calculator</h3>

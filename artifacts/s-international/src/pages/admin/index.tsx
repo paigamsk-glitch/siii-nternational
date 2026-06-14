@@ -14,7 +14,8 @@ import { Bookings } from "./Bookings";
 import { AdminUsers } from "./Users";
 import { CMS } from "./CMS";
 import { Inquiries } from "./Inquiries";
-import { Mail } from "lucide-react";
+import { VisaApplications } from "./VisaApplications";
+import { Mail, Globe } from "lucide-react";
 
 export const BASE_URL = import.meta.env.BASE_URL.replace(/\/$/, "");
 export const ADMIN_KEY = "admin2024";
@@ -24,7 +25,7 @@ const ADMIN_CREDENTIALS = [
   { email: "admin@sinternational.com", password: "admin2024" },
 ];
 
-type Section = "dashboard" | "packages" | "hotels" | "destinations" | "bookings" | "users" | "inquiries" | "cms";
+type Section = "dashboard" | "packages" | "hotels" | "destinations" | "bookings" | "users" | "inquiries" | "visa-applications" | "cms";
 
 const NAV_ITEMS: { id: Section; label: string; icon: React.ElementType; badge?: string }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -34,6 +35,7 @@ const NAV_ITEMS: { id: Section; label: string; icon: React.ElementType; badge?: 
   { id: "bookings", label: "Bookings", icon: BookOpen },
   { id: "users", label: "Users", icon: Users },
   { id: "inquiries", label: "Inquiries", icon: Mail },
+  { id: "visa-applications", label: "Visa Applications", icon: Globe, badge: "New" },
   { id: "cms", label: "Website CMS", icon: Settings },
 ];
 
@@ -151,7 +153,12 @@ export function Admin() {
                 }`}
               >
                 <Icon className="w-4 h-4 shrink-0" />
-                <span>{item.label}</span>
+                <span className="flex-1 text-left">{item.label}</span>
+                {item.badge && !active && (
+                  <span className="text-[10px] font-bold bg-orange-500 text-white px-1.5 py-0.5 rounded-full leading-none">
+                    {item.badge}
+                  </span>
+                )}
                 {active && <ChevronRight className="w-3.5 h-3.5 ml-auto" />}
               </button>
             );
@@ -219,6 +226,7 @@ export function Admin() {
               {section === "bookings" && <Bookings darkMode={darkMode} />}
               {section === "users" && <AdminUsers darkMode={darkMode} />}
               {section === "inquiries" && <Inquiries darkMode={darkMode} />}
+              {section === "visa-applications" && <VisaApplications darkMode={darkMode} />}
               {section === "cms" && <CMS darkMode={darkMode} />}
             </motion.div>
           </AnimatePresence>
