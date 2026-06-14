@@ -1,0 +1,197 @@
+I want to add a new **Visa Services section** similar to premium airline visa booking pages.
+
+Important:
+
+* Do NOT change the existing website theme.
+* Keep the current luxury travel design.
+* Maintain the same navy blue, white, glass effect, rounded cards, and typography.
+* The visa section should look like it belongs to the existing website.
+
+## 1. Add Visa Tab
+
+In the main navigation add:
+
+Flights | Hotels | Packages | Visa | Contact
+
+The Visa tab should match the existing navigation style.
+
+## 2. Visa Landing Page
+
+Create a dedicated Visa page.
+
+Top section:
+
+Title:
+"Visa Services"
+
+Subtitle:
+"Apply for your visa with expert assistance"
+
+Create a search panel:
+
+"Where are you travelling?"
+
+Fields:
+
+Passport Country:
+
+* Dropdown
+* Example: India
+
+Destination Country:
+
+* Search dropdown
+* Example:
+  USA
+  UK
+  Canada
+  Australia
+  Dubai
+  Europe
+  Argentina
+
+Travel Date:
+
+* Date picker
+
+Button:
+
+"Check Visa Requirements"
+
+## 3. Visa Options Cards
+
+After selecting country show visa cards like airline websites.
+
+Example:
+
+USA Tourist Visa
+
+Card details:
+
+Visa Type:
+Tourist
+
+Entry:
+Single / Multiple
+
+Validity:
+3 Months
+
+Stay:
+Up to 90 days
+
+Processing Time:
+5-7 Days
+
+Price:
+₹XXXX
+
+Buttons:
+
+View Details
+
+Apply Now
+
+## 4. Visa Application Flow
+
+When user clicks Apply Now:
+
+Create multi-step form:
+
+Step 1:
+Traveller Details
+
+Fields:
+
+* Full Name
+* Date of Birth
+* Passport Number
+* Nationality
+* Email
+* Phone
+
+Step 2:
+Upload Documents
+
+Create upload boxes:
+
+* Passport Front
+* Passport Back
+* Photograph
+* ID Proof
+* Travel Insurance
+* Flight Booking
+* Hotel Reservation
+
+Step 3:
+Review & Payment
+
+Show:
+
+Traveller count
+
+Visa fee
+
+Service fee
+
+Total amount
+
+Button:
+
+Proceed To Payment
+
+## 5. Visa Summary Sidebar
+
+Create a right-side sticky summary card:
+
+Example:
+
+Visa For Citizen Of:
+IND
+
+Destination:
+USA
+
+Visa Type:
+Tourist
+
+Entry:
+Multiple
+
+Validity:
+3 Months
+
+Stay:
+90 Days
+
+## 6. Visa Data
+
+Do not hardcode only one country.
+
+Create a visa data structure/API layer:
+
+visaService.js
+
+It should support:
+
+* Countries
+* Visa types
+* Fees
+* Documents required
+* Processing time
+
+Prepare it so later a real visa API can be connected.
+
+## 7. User Experience
+
+Add:
+
+* Loading states
+* Error messages
+* Success confirmation
+* Mobile responsive layout
+
+The final design should feel like:
+Airline + premium travel agency + online visa application portal.
+
+Do not break existing flight/hotel/package features.
