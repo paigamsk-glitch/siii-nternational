@@ -54,9 +54,9 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-lg mb-4 font-serif text-secondary">Contact</h3>
             <ul className="space-y-3 text-sm text-primary-foreground/70">
-              <li>1-800-PREMIUM</li>
-              <li>concierge@sinternational.com</li>
-              <li>123 Global Avenue, Suite 400<br />New York, NY 10001</li>
+              <li>+91 99675 53351</li>
+              <li>sagarinternationaltravels@mail.com</li>
+              <li>313 Metro Market, Shop No. 2<br />Abdul Rehman Street, Opp. Abdus Salam Masjid<br />Mumbai – 400008, India</li>
             </ul>
           </div>
         </div>
