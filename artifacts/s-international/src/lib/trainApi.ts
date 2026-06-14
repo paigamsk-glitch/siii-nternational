@@ -582,6 +582,90 @@ const ALL_TRAINS: Train[] = [
   },
 ];
 
+// ─── enrichClasses: auto-generates full IRCTC-style class set ─────────────────
+const TATKAL_MULT: Record<string, number> = {
+  "1A": 1.08, "2A": 1.27, "3A": 1.30, SL: 1.55, CC: 1.25, EC: 1.10,
+};
+const MINS_POOL = [15, 30, 60, 120, 240, 420, 480, 7 * 60, 15 * 60];
+const WL_POOL = [8, 11, 14, 18, 22, 33, 44, 52, 67, 118];
+
+function enrichClasses(classes: TrainClass[], seed: number): TrainClass[] {
+  const result: TrainClass[] = [];
+
+  classes.forEach((cls, i) => {
+    // Skip if already enriched (has tatkal field set)
+    const mins = cls.updatedMinsAgo ?? MINS_POOL[(seed + i * 3) % MINS_POOL.length];
+    let derivedAvailType: TrainClass["availType"] = "AVAILABLE";
+    if (cls.available === 0 && (cls.waitlist ?? 0) > 0) {
+      derivedAvailType = (seed + i) % 2 === 0 ? "GNWL" : "TQWL";
+    }
+
+    result.push({
+      ...cls,
+      availType: cls.availType ?? derivedAvailType,
+      updatedMinsAgo: mins,
+      freeCancellation: cls.freeCancellation ?? (!cls.tatkal && cls.code !== "GN" && cls.code !== "2S"),
+    });
+
+    // Only add Tatkal if not already a tatkal entry and class supports it
+    if (!cls.tatkal && TATKAL_MULT[cls.code]) {
+      const tFare = Math.ceil((cls.fare * TATKAL_MULT[cls.code]) / 5) * 5;
+      const wl = WL_POOL[(seed + i * 2 + 1) % WL_POOL.length];
+      const tMins = MINS_POOL[(seed + i * 3 + 2) % MINS_POOL.length];
+      result.push({
+        code: cls.code,
+        label: cls.label,
+        fare: tFare,
+        available: 0,
+        waitlist: wl,
+        tatkal: true,
+        availType: (seed + i) % 2 === 0 ? "TQWL" : "GNWL",
+        updatedMinsAgo: tMins,
+        freeCancellation: false,
+      });
+    }
+  });
+
+  // Add 2S (Second Sitting) for long-distance overnight trains that have SL
+  const hasSL = classes.some((c) => c.code === "SL");
+  if (hasSL && !classes.some((c) => c.code === "2S")) {
+    const slFare = classes.find((c) => c.code === "SL")!.fare;
+    result.push({
+      code: "2S",
+      label: "Second Sitting",
+      fare: Math.round(slFare * 0.4),
+      available: 0,
+      waitlist: WL_POOL[(seed + 4) % WL_POOL.length],
+      availType: "GNWL",
+      updatedMinsAgo: MINS_POOL[(seed + 5) % MINS_POOL.length],
+      freeCancellation: false,
+    });
+  }
+
+  // Add GN (General/Unreserved) for all overnight trains
+  if (hasSL && !classes.some((c) => c.code === "GN")) {
+    result.push({
+      code: "GN",
+      label: "General / Unreserved",
+      fare: 0,
+      available: 999,
+      availType: "AVAILABLE",
+      updatedMinsAgo: MINS_POOL[seed % MINS_POOL.length],
+      freeCancellation: false,
+    });
+  }
+
+  return result;
+}
+
+function applyEnrich(train: Train): Train {
+  // Don't double-enrich — check if already has tatkal entries
+  const alreadyEnriched = train.classes.some((c) => c.tatkal === true);
+  if (alreadyEnriched) return train;
+  const seed = parseInt(train.id.slice(-2), 10) || 0;
+  return { ...train, classes: enrichClasses(train.classes, seed) };
+}
+
 // ─── Featured/Popular Trains ───────────────────────────────────────────────────
 export function getPopularTrains(): Train[] {
   return [
@@ -591,7 +675,7 @@ export function getPopularTrains(): Train[] {
     ALL_TRAINS.find((t) => t.id === "10111")!,
     ALL_TRAINS.find((t) => t.id === "12759")!,
     ALL_TRAINS.find((t) => t.id === "12009")!,
-  ].filter(Boolean);
+  ].filter(Boolean).map(applyEnrich);
 }
 
 // ─── API Layer ──────────────────────────────────────────────────────────────────
@@ -619,7 +703,7 @@ export async function searchTrains(params: TrainSearchParams): Promise<Train[]> 
   if (results.length === 0) {
     return ALL_TRAINS.filter(
       (t) => stationMatches(t.to, params.from) && stationMatches(t.from, params.to)
-    ).map((t) => ({
+    ).map((t) => applyEnrich({
       ...t,
       from: t.to,
       to: t.from,
@@ -628,7 +712,7 @@ export async function searchTrains(params: TrainSearchParams): Promise<Train[]> 
     }));
   }
 
-  return results;
+  return results.map(applyEnrich);
 }
 
 export function getTrainById(id: string): Train | undefined {

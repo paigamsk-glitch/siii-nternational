@@ -178,7 +178,7 @@ function TrainResultCard({
                     )}
                   </div>
                   <span className={cn("text-sm font-bold tabular-nums", isSelected ? "text-primary" : "text-foreground")}>
-                    ₹{cls.fare.toLocaleString("en-IN")}
+                    {cls.fare === 0 ? "No Fare" : `₹${cls.fare.toLocaleString("en-IN")}`}
                   </span>
                 </div>
 
@@ -253,7 +253,7 @@ function TrainResultCard({
 
 // ─── PopularRouteCard ─────────────────────────────────────────────────────────
 function PopularRouteCard({ train, onClick }: { train: TrainType; onClick: () => void }) {
-  const cheapest = [...train.classes].sort((a, b) => a.fare - b.fare)[0];
+  const cheapest = [...train.classes].filter((c) => c.fare > 0 && !c.tatkal).sort((a, b) => a.fare - b.fare)[0] ?? train.classes[0];
   return (
     <motion.div
       whileHover={{ y: -3 }}
@@ -370,8 +370,8 @@ export function Trains() {
     if (sortBy === "departure") return a.departureTime.localeCompare(b.departureTime);
     if (sortBy === "duration") return a.duration.localeCompare(b.duration);
     if (sortBy === "price") {
-      const af = Math.min(...a.classes.filter(c => c.available > 0).map(c => c.fare));
-      const bf = Math.min(...b.classes.filter(c => c.available > 0).map(c => c.fare));
+      const af = Math.min(...a.classes.filter(c => c.available > 0 && c.fare > 0 && !c.tatkal).map(c => c.fare));
+      const bf = Math.min(...b.classes.filter(c => c.available > 0 && c.fare > 0 && !c.tatkal).map(c => c.fare));
       return af - bf;
     }
     return 0;
@@ -414,7 +414,7 @@ export function Trains() {
                 <Label className="text-white/80 text-xs font-semibold uppercase tracking-wider">
                   From
                 </Label>
-                <div className="bg-white rounded-xl overflow-hidden">
+                <div className="bg-white rounded-xl">
                   <StationAutocomplete
                     id="train-from"
                     placeholder="City or Station"
@@ -429,7 +429,7 @@ export function Trains() {
                 <Label className="text-white/80 text-xs font-semibold uppercase tracking-wider">
                   To
                 </Label>
-                <div className="bg-white rounded-xl overflow-hidden">
+                <div className="bg-white rounded-xl">
                   <StationAutocomplete
                     id="train-to"
                     placeholder="City or Station"
