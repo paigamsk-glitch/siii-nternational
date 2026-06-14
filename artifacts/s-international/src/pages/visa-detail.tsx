@@ -502,6 +502,56 @@ export function VisaDetail() {
             {/* STEP 2 – Upload Documents */}
             {step === 2 && (
               <motion.div key="step2" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+                {/* Checklist progress tracker */}
+                {(() => {
+                  const allDocs = selectedVisa.documents.filter(doc => doc.required || selectedOptionalDocs.has(doc.id));
+                  const requiredDocs = allDocs.filter(d => d.required);
+                  const optionalDocs = allDocs.filter(d => !d.required);
+                  const requiredUploaded = requiredDocs.filter(d => uploads[d.id]).length;
+                  const optionalUploaded = optionalDocs.filter(d => uploads[d.id]).length;
+                  const totalUploaded = requiredUploaded + optionalUploaded;
+                  const totalDocs = allDocs.length;
+                  const pct = totalDocs > 0 ? Math.round((totalUploaded / totalDocs) * 100) : 0;
+                  const allRequiredDone = requiredUploaded === requiredDocs.length;
+                  return (
+                    <div className="bg-card border border-card-border rounded-2xl p-4 mb-3">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-bold text-xs uppercase tracking-wider text-foreground">Upload Progress</h3>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${allRequiredDone ? "bg-accent/15 text-accent" : "bg-muted text-muted-foreground"}`}>
+                          {allRequiredDone ? "Ready to proceed" : "Required docs pending"}
+                        </span>
+                      </div>
+                      {/* Progress bar */}
+                      <div className="h-2 bg-muted rounded-full overflow-hidden mb-3">
+                        <motion.div
+                          className="h-full rounded-full bg-accent"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${pct}%` }}
+                          transition={{ duration: 0.4 }}
+                        />
+                      </div>
+                      <div className="flex gap-4">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${requiredUploaded === requiredDocs.length && requiredDocs.length > 0 ? "bg-accent" : "bg-destructive/70"}`} />
+                          <span className="text-xs text-muted-foreground">
+                            Required: <span className="font-semibold text-foreground">{requiredUploaded}/{requiredDocs.length}</span>
+                          </span>
+                        </div>
+                        {optionalDocs.length > 0 && (
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${optionalUploaded === optionalDocs.length ? "bg-accent" : "bg-muted-foreground/40"}`} />
+                            <span className="text-xs text-muted-foreground">
+                              Optional: <span className="font-semibold text-foreground">{optionalUploaded}/{optionalDocs.length}</span>
+                            </span>
+                          </div>
+                        )}
+                        <div className="ml-auto text-xs text-muted-foreground">
+                          <span className="font-semibold text-foreground">{totalUploaded}</span>/{totalDocs} uploaded
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
                 <div className="bg-card border border-card-border rounded-2xl p-5">
                   <h3 className="font-bold text-xs uppercase tracking-wider text-foreground mb-5">Upload Documents</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
