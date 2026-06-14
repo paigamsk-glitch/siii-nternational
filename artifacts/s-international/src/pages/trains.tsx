@@ -363,7 +363,7 @@ export function Trains() {
       date: date ? format(date, "yyyy-MM-dd") : "",
       classCode,
     });
-    setLocation("/checkout");
+    setLocation("/train-checkout");
   }
 
   const sortedTrains = [...trains].sort((a, b) => {
