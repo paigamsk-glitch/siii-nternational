@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Plane, Building2, Map, Package, Menu, X, User, Train } from "lucide-react";
+import { Plane, Building2, Map, Package, Menu, X, User, Train, Globe } from "lucide-react";
 import { useGetSession, useAuthLogout, getGetSessionQueryKey } from "@workspace/api-client-react";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -31,6 +31,7 @@ export function Header() {
     { label: "Train", path: "/trains", icon: Train },
     { label: "Hotels", path: "/hotels", icon: Building2 },
     { label: "Packages", path: "/packages", icon: Package },
+    { label: "Visa", path: "/visa", icon: Globe },
     { label: "Contact", path: "/contact", icon: null },
   ];
 
