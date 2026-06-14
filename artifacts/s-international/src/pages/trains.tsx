@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { format, parseISO } from "date-fns";
 import {
-  Train, Clock, ArrowRight, ArrowLeftRight, CheckCircle,
-  AlertCircle, Calendar as CalendarIcon, Sparkles
+  Train, ArrowRight, ArrowLeftRight, CheckCircle,
+  AlertCircle, Calendar as CalendarIcon, Sparkles, MapPin, Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { StationAutocomplete } from "@/components/train/StationAutocomplete";
-import { searchTrains, type Train as TrainType, CLASS_LABELS } from "@/lib/trainApi";
+import {
+  searchTrains, getPopularTrains,
+  type Train as TrainType, CLASS_LABELS, CLASS_ORDER
+} from "@/lib/trainApi";
 import { useBookingStore } from "@/lib/booking-store";
 import { useLocation } from "wouter";
 
@@ -25,15 +28,233 @@ const TYPE_COLORS: Record<string, string> = {
   Mail: "bg-gray-100 text-gray-700 border-gray-200",
 };
 
-const PASSENGER_OPTIONS = [
-  { label: "1 Passenger", value: "1" },
-  { label: "2 Passengers", value: "2" },
-  { label: "3 Passengers", value: "3" },
-  { label: "4 Passengers", value: "4" },
-  { label: "5 Passengers", value: "5" },
-  { label: "6 Passengers", value: "6" },
-];
+const DAY_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+// ─── TrainResultCard ──────────────────────────────────────────────────────────
+function TrainResultCard({
+  train,
+  passengers,
+  onBook,
+  index,
+}: {
+  train: TrainType;
+  passengers: number;
+  onBook: (train: TrainType, classCode: string, fare: number) => void;
+  index: number;
+}) {
+  // Default to cheapest available class
+  const cheapestClass = [...train.classes]
+    .filter((c) => c.available > 0)
+    .sort((a, b) => a.fare - b.fare)[0] ?? train.classes[train.classes.length - 1];
+
+  const [selectedCode, setSelectedCode] = useState(cheapestClass.code);
+
+  const selectedCls = train.classes.find((c) => c.code === selectedCode) ?? cheapestClass;
+  const totalFare = selectedCls.fare * passengers;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.06 }}
+      className="bg-white rounded-2xl border border-border overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300"
+    >
+      {/* Top header strip */}
+      <div className="flex items-center justify-between px-5 pt-4 pb-2">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-primary/8 border border-primary/10 flex items-center justify-center">
+            <Train className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <p className="font-bold text-sm">{train.name}</p>
+            <p className="text-xs text-muted-foreground font-mono">
+              #{train.number}
+              {train.via && (
+                <span className="ml-2 text-muted-foreground/70">via {train.via}</span>
+              )}
+            </p>
+          </div>
+        </div>
+        <Badge
+          className={`text-xs font-semibold border ${TYPE_COLORS[train.type] ?? TYPE_COLORS.Express}`}
+        >
+          {train.type}
+        </Badge>
+      </div>
+
+      {/* Route row */}
+      <div className="flex items-center justify-between px-5 py-3 border-y border-border bg-muted/20">
+        <div>
+          <p className="text-2xl font-bold tabular-nums">{train.departureTime}</p>
+          <p className="text-xs font-bold text-primary">{train.from.code}</p>
+          <p className="text-xs text-muted-foreground">{train.from.city}</p>
+        </div>
+
+        <div className="flex-1 px-4 flex flex-col items-center gap-1">
+          <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <Clock className="w-3 h-3" /> {train.duration}
+          </span>
+          <div className="w-full flex items-center gap-1">
+            <div className="w-1.5 h-1.5 rounded-full border-2 border-primary bg-white" />
+            <div className="flex-1 h-px bg-gradient-to-r from-primary via-secondary to-primary" />
+            <Train className="w-3.5 h-3.5 text-secondary" />
+            <div className="flex-1 h-px bg-gradient-to-r from-secondary to-primary" />
+            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+          </div>
+          <div className="flex gap-0.5">
+            {DAY_SHORT.map((d) => (
+              <span
+                key={d}
+                className={`text-[9px] font-bold px-0.5 rounded ${
+                  train.runningDays.includes(d)
+                    ? "text-primary"
+                    : "text-muted-foreground/30"
+                }`}
+              >
+                {d[0]}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="text-right">
+          <p className="text-2xl font-bold tabular-nums">{train.arrivalTime}</p>
+          <p className="text-xs font-bold text-primary">{train.to.code}</p>
+          <p className="text-xs text-muted-foreground">{train.to.city}</p>
+        </div>
+      </div>
+
+      {/* Class selector row */}
+      <div className="px-5 py-3">
+        <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-2">
+          Select Class
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+          {train.classes.map((cls) => {
+            const isSelected = cls.code === selectedCode;
+            return (
+              <button
+                key={cls.code}
+                onClick={() => setSelectedCode(cls.code)}
+                className={cn(
+                  "flex flex-col items-start p-2.5 rounded-xl border-2 transition-all text-left",
+                  isSelected
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/40 hover:bg-muted/30"
+                )}
+              >
+                <div className="flex items-center justify-between w-full mb-0.5">
+                  <span
+                    className={cn(
+                      "text-xs font-bold font-mono",
+                      isSelected ? "text-primary" : "text-foreground"
+                    )}
+                  >
+                    {cls.code}
+                  </span>
+                  {cls.available > 0 ? (
+                    <span className="text-[10px] text-green-600 font-semibold">
+                      {cls.available} avl
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-amber-500 font-semibold">
+                      WL {cls.waitlist}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[10px] text-muted-foreground leading-tight line-clamp-1">
+                  {cls.label}
+                </p>
+                <p
+                  className={cn(
+                    "text-sm font-bold mt-1",
+                    isSelected ? "text-primary" : "text-foreground"
+                  )}
+                >
+                  ₹{cls.fare.toLocaleString("en-IN")}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Bottom: total + Book */}
+      <div className="px-5 pb-4 flex items-center justify-between gap-4 border-t border-border pt-3">
+        <div>
+          <p className="text-xs text-muted-foreground">
+            {passengers} × ₹{selectedCls.fare.toLocaleString("en-IN")} ({selectedCls.label})
+          </p>
+          <p className="text-xl font-bold text-primary">
+            ₹{totalFare.toLocaleString("en-IN")}
+          </p>
+          <div className="flex items-center gap-1 mt-0.5">
+            {selectedCls.available > 0 ? (
+              <>
+                <CheckCircle className="w-3 h-3 text-green-500" />
+                <span className="text-xs text-green-600 font-medium">Available</span>
+              </>
+            ) : (
+              <>
+                <AlertCircle className="w-3 h-3 text-amber-500" />
+                <span className="text-xs text-amber-600 font-medium">Waitlist</span>
+              </>
+            )}
+            {selectedCls.available > 0 && selectedCls.available < 12 && (
+              <span className="text-xs text-destructive font-semibold ml-2 flex items-center gap-0.5">
+                <Sparkles className="w-3 h-3" /> Only {selectedCls.available} left!
+              </span>
+            )}
+          </div>
+        </div>
+        <Button
+          onClick={() => onBook(train, selectedCode, selectedCls.fare)}
+          className="hover-elevate bg-primary hover:bg-primary/90 rounded-xl font-semibold px-6"
+          disabled={selectedCls.available === 0 && !selectedCls.waitlist}
+        >
+          Book Now <ArrowRight className="w-4 h-4 ml-1" />
+        </Button>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── PopularRouteCard ─────────────────────────────────────────────────────────
+function PopularRouteCard({ train, onClick }: { train: TrainType; onClick: () => void }) {
+  const cheapest = [...train.classes].sort((a, b) => a.fare - b.fare)[0];
+  return (
+    <motion.div
+      whileHover={{ y: -3 }}
+      onClick={onClick}
+      className="bg-white rounded-2xl border border-border p-4 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all"
+    >
+      <div className="flex items-center justify-between mb-3">
+        <Badge className={`text-xs border ${TYPE_COLORS[train.type] ?? TYPE_COLORS.Express}`}>
+          {train.type}
+        </Badge>
+        <span className="text-xs text-muted-foreground font-mono">#{train.number}</span>
+      </div>
+      <h3 className="font-bold text-sm mb-1">{train.name}</h3>
+      <div className="flex items-center gap-2 text-muted-foreground mb-3">
+        <span className="text-xs font-semibold">{train.from.city}</span>
+        <ArrowRight className="w-3 h-3" />
+        <span className="text-xs font-semibold">{train.to.city}</span>
+      </div>
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-muted-foreground">
+          <Clock className="w-3 h-3 inline mr-1" />
+          {train.duration}
+        </div>
+        <div>
+          <span className="text-xs text-muted-foreground">from </span>
+          <span className="font-bold text-primary">₹{cheapest.fare.toLocaleString("en-IN")}</span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
 export function Trains() {
   const [, setLocation] = useLocation();
   const setBookingItem = useBookingStore((state) => state.setBookingItem);
@@ -48,6 +269,8 @@ export function Trains() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
+  const popularTrains = getPopularTrains();
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const f = params.get("from");
@@ -56,9 +279,7 @@ export function Trains() {
     if (f) setFrom(f);
     if (t) setTo(t);
     if (d) { try { setDate(parseISO(d)); } catch (e) {} }
-    if (f && t) {
-      runSearch(f, t, d || "");
-    }
+    if (f && t) runSearch(f, t, d || "");
   }, []);
 
   async function runSearch(f: string, t: string, d: string) {
@@ -77,14 +298,13 @@ export function Trains() {
 
   function handleSearch() {
     if (from && to) {
-      const d = date ? format(date, "yyyy-MM-dd") : "";
-      runSearch(from, to, d);
+      runSearch(from, to, date ? format(date, "yyyy-MM-dd") : "");
     }
   }
 
-  function handleBook(train: TrainType, classCode: string) {
-    const cls = train.classes.find((c) => c.code === classCode) ?? train.classes[0];
+  function handleBook(train: TrainType, classCode: string, farePerPerson: number) {
     const pax = parseInt(passengers, 10);
+    const cls = train.classes.find((c) => c.code === classCode)!;
     const bookingItem = {
       id: `train-${train.id}-${classCode}`,
       trainId: train.id,
@@ -100,7 +320,8 @@ export function Trains() {
       trainType: train.type,
       classCode,
       className: CLASS_LABELS[classCode] ?? classCode,
-      price: cls.fare,
+      // price = per-person fare so checkout can multiply by travelers
+      price: farePerPerson,
       currency: "INR",
       seatsAvailable: cls.available,
     } as any;
@@ -117,16 +338,16 @@ export function Trains() {
     if (sortBy === "departure") return a.departureTime.localeCompare(b.departureTime);
     if (sortBy === "duration") return a.duration.localeCompare(b.duration);
     if (sortBy === "price") {
-      const aMin = Math.min(...a.classes.map((c) => c.fare));
-      const bMin = Math.min(...b.classes.map((c) => c.fare));
-      return aMin - bMin;
+      const af = Math.min(...a.classes.filter(c => c.available > 0).map(c => c.fare));
+      const bf = Math.min(...b.classes.filter(c => c.available > 0).map(c => c.fare));
+      return af - bf;
     }
     return 0;
   });
 
   return (
     <div className="min-h-screen pb-20" style={{ background: "hsl(232 22% 97%)" }}>
-      {/* Hero search bar */}
+      {/* ── Hero ────────────────────────────────────────────────────────── */}
       <div className="text-white pt-10 pb-16 relative overflow-hidden">
         <div
           className="absolute inset-0"
@@ -142,13 +363,13 @@ export function Trains() {
           <div className="flex items-center gap-3 mb-2">
             <Train className="w-6 h-6 text-secondary" />
             <span className="text-secondary text-sm font-semibold tracking-widest uppercase">
-              Train Search
+              Train Booking
             </span>
           </div>
           <h1 className="text-4xl font-serif font-bold mb-8">Book Train Tickets</h1>
 
           <div className="bg-white/10 backdrop-blur-md text-foreground rounded-2xl shadow-2xl border border-white/20 p-6">
-            <div className={cn("grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-5")}>
+            <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-5">
               {/* From */}
               <div className="space-y-1.5">
                 <Label className="text-white/80 text-xs font-semibold uppercase tracking-wider">
@@ -157,7 +378,7 @@ export function Trains() {
                 <div className="bg-white rounded-xl overflow-hidden">
                   <StationAutocomplete
                     id="train-from"
-                    placeholder="Departure city"
+                    placeholder="City or Station"
                     value={from}
                     onChange={setFrom}
                   />
@@ -172,7 +393,7 @@ export function Trains() {
                 <div className="bg-white rounded-xl overflow-hidden">
                   <StationAutocomplete
                     id="train-to"
-                    placeholder="Destination city"
+                    placeholder="City or Station"
                     value={to}
                     onChange={setTo}
                   />
@@ -231,16 +452,16 @@ export function Trains() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {PASSENGER_OPTIONS.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>
-                        {o.label}
+                    {[1, 2, 3, 4, 5, 6].map((n) => (
+                      <SelectItem key={n} value={String(n)}>
+                        {n} Passenger{n > 1 ? "s" : ""}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Search button */}
+              {/* Search */}
               <div className="flex items-end">
                 <Button
                   onClick={handleSearch}
@@ -255,63 +476,54 @@ export function Trains() {
       </div>
 
       <div className="container mx-auto px-4 -mt-4">
-        {/* Results toolbar */}
+        {/* ── Results toolbar ─────────────────────────────────────────── */}
         <div className="flex items-center justify-between bg-white rounded-2xl shadow-sm border border-border px-5 py-3 mb-5">
           <div className="flex items-center gap-3">
             {loading ? (
               <div className="flex items-center gap-2 text-muted-foreground text-sm">
                 <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                Searching available trains...
+                Searching trains...
               </div>
-            ) : (
+            ) : searched ? (
               <p className="text-sm font-medium text-foreground">
-                {searched ? (
-                  <>
-                    <span className="text-primary font-bold text-base">{sortedTrains.length}</span>
-                    <span className="text-muted-foreground ml-1">
-                      {sortedTrains.length === 1 ? "train" : "trains"} found
-                      {from && to ? ` · ${from} → ${to}` : ""}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-muted-foreground">Search for trains above</span>
-                )}
+                <span className="text-primary font-bold text-base">{sortedTrains.length}</span>
+                <span className="text-muted-foreground ml-1">
+                  {sortedTrains.length === 1 ? "train" : "trains"} found
+                  {from && to ? ` · ${from} → ${to}` : ""}
+                </span>
               </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">Popular trains shown below</p>
             )}
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground hidden sm:block">Sort:</span>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="h-8 border-none bg-muted/50 shadow-none focus:ring-0 font-semibold gap-1 rounded-lg text-sm w-44">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="departure">Earliest Departure</SelectItem>
-                <SelectItem value="price">Lowest Fare</SelectItem>
-                <SelectItem value="duration">Shortest Duration</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {searched && (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground hidden sm:block">Sort:</span>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="h-8 border-none bg-muted/50 shadow-none focus:ring-0 font-semibold gap-1 rounded-lg text-sm w-44">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="departure">Earliest Departure</SelectItem>
+                  <SelectItem value="price">Lowest Fare</SelectItem>
+                  <SelectItem value="duration">Shortest Duration</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
 
-        {/* Train cards */}
-        {loading ? (
+        {/* ── Loading skeletons ────────────────────────────────────────── */}
+        {loading && (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-2xl border border-border h-52 animate-pulse" />
+              <div key={i} className="bg-white rounded-2xl border border-border h-64 animate-pulse" />
             ))}
           </div>
-        ) : !searched ? (
-          <div className="bg-white rounded-2xl border border-border p-16 text-center">
-            <div className="w-20 h-20 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-5">
-              <Train className="w-10 h-10 text-primary/40" />
-            </div>
-            <h3 className="text-2xl font-serif font-bold mb-2">Find Your Train</h3>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              Search trains between Delhi, Mumbai, Kolkata, Chennai, Bangalore, Hyderabad, Goa and more.
-            </p>
-          </div>
-        ) : sortedTrains.length === 0 ? (
+        )}
+
+        {/* ── Search results ───────────────────────────────────────────── */}
+        {!loading && searched && sortedTrains.length === 0 && (
           <div className="bg-white rounded-2xl border border-border p-16 text-center">
             <div className="w-20 h-20 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-5">
               <Train className="w-10 h-10 text-primary/40" />
@@ -319,153 +531,42 @@ export function Trains() {
             <h3 className="text-2xl font-serif font-bold mb-2">No trains found</h3>
             <p className="text-muted-foreground max-w-md mx-auto">
               No direct trains found between <strong>{from}</strong> and <strong>{to}</strong>.
-              Try searching with the full city name.
+              Try searching with the city name or a major station.
             </p>
           </div>
-        ) : (
+        )}
+
+        {!loading && searched && sortedTrains.length > 0 && (
           <div className="space-y-4">
-            {sortedTrains.map((train, i) => {
-              const lowestFare = Math.min(...train.classes.map((c) => c.fare));
-              const hasAvailability = train.classes.some((c) => c.available > 0);
-              const pax = parseInt(passengers, 10);
+            {sortedTrains.map((train, i) => (
+              <TrainResultCard
+                key={train.id}
+                train={train}
+                passengers={parseInt(passengers)}
+                onBook={handleBook}
+                index={i}
+              />
+            ))}
+          </div>
+        )}
 
-              return (
-                <motion.div
+        {/* ── Popular trains (shown when not searched yet) ─────────────── */}
+        {!searched && !loading && (
+          <div>
+            <h2 className="text-lg font-bold mb-4">Popular Train Routes</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {popularTrains.map((train) => (
+                <PopularRouteCard
                   key={train.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.06 }}
-                  className="bg-white rounded-2xl border border-border overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300 flex flex-col md:flex-row"
-                >
-                  {/* Side ribbon */}
-                  <div className="md:w-3 bg-gradient-to-b from-primary to-accent shrink-0" />
-
-                  <div className="flex-1 p-5 md:p-6 flex flex-col md:flex-row gap-5">
-                    {/* Left: train info */}
-                    <div className="flex-1">
-                      {/* Train name row */}
-                      <div className="flex items-center gap-3 mb-5">
-                        <div className="w-10 h-10 rounded-xl bg-primary/8 border border-primary/10 flex items-center justify-center">
-                          <Train className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-sm text-foreground">{train.name}</p>
-                          <p className="text-xs text-muted-foreground font-mono">#{train.number}</p>
-                        </div>
-                        <Badge className={`ml-auto text-xs font-semibold border ${TYPE_COLORS[train.type] ?? TYPE_COLORS.Express}`}>
-                          {train.type}
-                        </Badge>
-                      </div>
-
-                      {/* Route timeline */}
-                      <div className="flex items-center justify-between">
-                        <div className="text-left">
-                          <div className="text-3xl font-bold text-foreground tracking-tight">
-                            {train.departureTime}
-                          </div>
-                          <div className="text-sm font-semibold text-primary mt-0.5">
-                            {train.from.code}
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-0.5 max-w-[100px] truncate">
-                            {train.from.city}
-                          </div>
-                        </div>
-
-                        <div className="flex-1 px-4 flex flex-col items-center gap-1">
-                          <span className="text-xs text-muted-foreground font-medium">
-                            {train.duration}
-                          </span>
-                          <div className="w-full flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-full border-2 border-primary bg-white" />
-                            <div className="flex-1 h-px bg-gradient-to-r from-primary via-secondary to-primary" />
-                            <Train className="w-4 h-4 text-secondary" />
-                            <div className="flex-1 h-px bg-gradient-to-r from-secondary to-primary" />
-                            <div className="w-2 h-2 rounded-full bg-primary" />
-                          </div>
-                          <span className="text-xs text-muted-foreground font-medium">
-                            {train.runningDays.length === 7 ? "Daily" : train.runningDays.join(", ")}
-                          </span>
-                        </div>
-
-                        <div className="text-right">
-                          <div className="text-3xl font-bold text-foreground tracking-tight">
-                            {train.arrivalTime}
-                          </div>
-                          <div className="text-sm font-semibold text-primary mt-0.5">
-                            {train.to.code}
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-0.5 max-w-[100px] truncate text-right">
-                            {train.to.city}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Class chips */}
-                      <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-border">
-                        {train.classes.map((cls) => (
-                          <div
-                            key={cls.code}
-                            className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/60 rounded-lg px-2.5 py-1.5"
-                          >
-                            <span className="font-mono font-bold text-primary">{cls.code}</span>
-                            <span>·</span>
-                            <span>₹{cls.fare.toLocaleString("en-IN")}</span>
-                            {cls.available > 0 ? (
-                              <span className="text-green-600">· {cls.available} avail</span>
-                            ) : (
-                              <span className="text-amber-500">· WL</span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Right: pricing */}
-                    <div className="md:w-52 md:border-l md:border-border md:pl-6 flex flex-row md:flex-col justify-between md:justify-center items-end md:items-center gap-4 pt-4 md:pt-0 border-t border-border md:border-t-0">
-                      <div className="text-center md:mb-2">
-                        <div className="text-xs text-muted-foreground mb-1">
-                          {passengers} passenger{parseInt(passengers) > 1 ? "s" : ""}
-                        </div>
-                        <div className="text-3xl font-bold text-primary leading-none">
-                          ₹{(lowestFare * parseInt(passengers)).toLocaleString("en-IN")}
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          ₹{lowestFare.toLocaleString("en-IN")} / person
-                        </div>
-                        <div className="flex items-center justify-center gap-1 mt-1.5">
-                          {hasAvailability ? (
-                            <>
-                              <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-                              <span className="text-xs text-green-600 font-medium">Available</span>
-                            </>
-                          ) : (
-                            <>
-                              <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
-                              <span className="text-xs text-amber-600 font-medium">Waitlist</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-center gap-2 w-full">
-                        <Button
-                          onClick={() => handleBook(train, train.classes[0].code)}
-                          className="w-full hover-elevate bg-primary hover:bg-primary/90 rounded-xl font-semibold"
-                          disabled={!hasAvailability}
-                        >
-                          Book Now <ArrowRight className="w-4 h-4 ml-1" />
-                        </Button>
-                        {train.classes[0].available > 0 && train.classes[0].available < 15 && (
-                          <div className="text-xs text-destructive font-semibold flex items-center gap-1">
-                            <Sparkles className="w-3 h-3" />
-                            Only {train.classes[0].available} seats left
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
+                  train={train}
+                  onClick={() => {
+                    setFrom(train.from.city);
+                    setTo(train.to.city);
+                    runSearch(train.from.city, train.to.city, "");
+                  }}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>
