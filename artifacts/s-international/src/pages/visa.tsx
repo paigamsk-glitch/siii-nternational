@@ -2,10 +2,50 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import {
-  Globe, Plane, Search, ChevronDown, CheckCircle2, Shield, Clock, Star, Users, Award, ArrowRight
+  Globe, Search, ChevronDown, CheckCircle2, Shield, Clock, Star, Award, ArrowRight, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VISA_COUNTRIES, PASSPORT_COUNTRIES } from "@/lib/visa-service";
+
+// ─── 3-letter ISO → 2-letter for flagcdn.com ─────────────────────────────
+const ISO3: Record<string, string> = {
+  IND:"in", USA:"us", GBR:"gb", AUS:"au", CAN:"ca", DEU:"de", FRA:"fr",
+  ARE:"ae", SGP:"sg", ZAF:"za", NGA:"ng", PAK:"pk", BGD:"bd", LKA:"lk", NPL:"np",
+  BRA:"br", ARG:"ar", MEX:"mx", ITA:"it", ESP:"es", NLD:"nl", CHE:"ch", GRC:"gr",
+  PRT:"pt", SWE:"se", NOR:"no", AUT:"at", IRL:"ie", RUS:"ru", TUR:"tr", BEL:"be",
+  POL:"pl", DNK:"dk", FIN:"fi", SAU:"sa", QAT:"qa", BHR:"bh", OMN:"om", KWT:"kw",
+  NZL:"nz", JPN:"jp", KOR:"kr", CHN:"cn", THA:"th", VNM:"vn", IDN:"id", MYS:"my",
+  PHL:"ph", MDV:"mv", KEN:"ke", TZA:"tz", ETH:"et", EGY:"eg", MAR:"ma", BTN:"bt",
+  CHI:"ch", SRB:"rs", HRV:"hr", ROU:"ro", BGR:"bg", HUN:"hu", CZE:"cz", SVK:"sk",
+  SVN:"si", EST:"ee", LVA:"lv", LTU:"lt", ISL:"is", MLT:"mt", LUX:"lu", CYP:"cy",
+  UKR:"ua", BLR:"by", GEO:"ge", ARM:"am", AZE:"az", KAZ:"kz", UZB:"uz", MNG:"mn",
+  TWN:"tw", HKG:"hk", MAC:"mo", BRN:"bn", KHM:"kh", LAO:"la", MMR:"mm", TLS:"tl",
+  NIC:"ni", GTM:"gt", HND:"hn", SLV:"sv", CRI:"cr", PAN:"pa", CUB:"cu", JAM:"jm",
+  HTI:"ht", DOM:"do", PRI:"pr", TTO:"tt", COL:"co", VEN:"ve", PER:"pe", ECU:"ec",
+  BOL:"bo", CHL:"cl", PRY:"py", URY:"uy", GUY:"gy", SUR:"sr", ZWE:"zw", ZMB:"zm",
+  MOZ:"mz", MWI:"mw", UGA:"ug", RWA:"rw", TUN:"tn", LBY:"ly", DZA:"dz", GHA:"gh",
+  CMR:"cm", CIV:"ci", SEN:"sn", MLI:"ml", NER:"ne", TCD:"td", SDN:"sd", SOM:"so",
+  PYF:"pf", NCL:"nc",
+};
+
+function flagUrl(iso3: string): string {
+  const code = ISO3[iso3] ?? iso3.slice(0, 2).toLowerCase();
+  return `https://flagcdn.com/w20/${code}.png`;
+}
+
+function FlagImg({ iso3, size = 20 }: { iso3: string; size?: number }) {
+  return (
+    <img
+      src={flagUrl(iso3)}
+      alt={iso3}
+      width={size}
+      height={Math.round(size * 0.75)}
+      className="rounded-sm object-cover shrink-0"
+      style={{ width: size, height: Math.round(size * 0.75) }}
+      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+    />
+  );
+}
 
 const POPULAR = ["USA", "GBR", "CAN", "AUS", "ARE", "FRA", "SGP", "JPN", "THA", "ARG"];
 
@@ -30,6 +70,7 @@ export function Visa() {
   const [passportOpen, setPassportOpen] = useState(false);
   const [destOpen, setDestOpen] = useState(false);
   const [destSearch, setDestSearch] = useState("");
+  const [passportSearch, setPassportSearch] = useState("");
 
   const selectedPassport = PASSPORT_COUNTRIES.find((c) => c.code === passportCode);
   const selectedDest = VISA_COUNTRIES.find((c) => c.code === destCode);
@@ -37,6 +78,10 @@ export function Visa() {
   const filteredDest = VISA_COUNTRIES.filter((c) =>
     c.name.toLowerCase().includes(destSearch.toLowerCase()) ||
     c.code.toLowerCase().includes(destSearch.toLowerCase())
+  );
+  const filteredPassport = PASSPORT_COUNTRIES.filter((c) =>
+    c.name.toLowerCase().includes(passportSearch.toLowerCase()) ||
+    c.code.toLowerCase().includes(passportSearch.toLowerCase())
   );
 
   function handleCheck() {
@@ -86,27 +131,49 @@ export function Visa() {
                 </label>
                 <button
                   type="button"
-                  onClick={() => { setPassportOpen(!passportOpen); setDestOpen(false); }}
+                  onClick={() => { setPassportOpen(!passportOpen); setDestOpen(false); setPassportSearch(""); }}
                   className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl border-2 border-border bg-white hover:border-primary transition-colors text-sm font-medium text-foreground"
                 >
                   <span className="flex items-center gap-2">
-                    <span className="text-lg">{selectedPassport?.flag}</span>
+                    {selectedPassport && <FlagImg iso3={selectedPassport.code} />}
                     <span>{selectedPassport?.name ?? "Select"}</span>
                   </span>
                   <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${passportOpen ? "rotate-180" : ""}`} />
                 </button>
                 {passportOpen && (
-                  <div className="absolute top-full mt-1 left-0 w-full bg-white border border-border rounded-xl shadow-xl z-50 max-h-52 overflow-y-auto">
-                    {PASSPORT_COUNTRIES.map((c) => (
-                      <button
-                        key={c.code}
-                        type="button"
-                        onClick={() => { setPassportCode(c.code); setPassportOpen(false); }}
-                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-muted transition-colors text-left ${c.code === passportCode ? "bg-primary/5 font-semibold text-primary" : ""}`}
-                      >
-                        <span className="text-lg">{c.flag}</span> {c.name}
-                      </button>
-                    ))}
+                  <div className="absolute top-full mt-1 left-0 w-full bg-white border border-border rounded-xl shadow-xl z-50">
+                    <div className="p-2 border-b border-border">
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
+                        <input
+                          autoFocus
+                          placeholder="Search country..."
+                          value={passportSearch}
+                          onChange={(e) => setPassportSearch(e.target.value)}
+                          className="w-full pl-7 pr-6 py-1.5 text-sm bg-muted rounded-lg outline-none"
+                        />
+                        {passportSearch && (
+                          <button onClick={() => setPassportSearch("")} className="absolute right-2 top-2">
+                            <X className="h-3 w-3 text-muted-foreground" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="max-h-48 overflow-y-auto">
+                      {filteredPassport.map((c) => (
+                        <button
+                          key={c.code}
+                          type="button"
+                          onClick={() => { setPassportCode(c.code); setPassportOpen(false); setPassportSearch(""); }}
+                          className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-muted transition-colors text-left ${c.code === passportCode ? "bg-primary/5 font-semibold text-primary" : ""}`}
+                        >
+                          <FlagImg iso3={c.code} /> {c.name}
+                        </button>
+                      ))}
+                      {filteredPassport.length === 0 && (
+                        <p className="text-center text-muted-foreground text-sm py-4">No results found</p>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -125,7 +192,7 @@ export function Visa() {
                 >
                   <span className="flex items-center gap-2">
                     {selectedDest ? (
-                      <><span className="text-lg">{selectedDest.flag}</span><span>{selectedDest.name}</span></>
+                      <><FlagImg iso3={selectedDest.code} /><span>{selectedDest.name}</span></>
                     ) : (
                       <><Search className="h-4 w-4" /><span>Search destination</span></>
                     )}
@@ -151,7 +218,7 @@ export function Visa() {
                           onClick={() => { setDestCode(c.code); setDestOpen(false); setDestSearch(""); }}
                           className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-muted transition-colors text-left ${c.code === destCode ? "bg-primary/5 font-semibold text-primary" : ""}`}
                         >
-                          <span className="text-lg">{c.flag}</span> {c.name}
+                          <FlagImg iso3={c.code} /> {c.name}
                         </button>
                       ))}
                       {filteredDest.length === 0 && (
@@ -208,7 +275,7 @@ export function Visa() {
                   onClick={() => setLocation(`/visa/${code}?passport=IND`)}
                   className="flex items-center gap-2 px-4 py-2 bg-white border border-border rounded-full text-sm font-medium text-foreground hover:border-primary hover:text-primary transition-colors shadow-sm"
                 >
-                  <span className="text-base">{c.flag}</span> {c.name}
+                  <FlagImg iso3={code} size={18} /> {c.name}
                 </button>
               );
             })}
@@ -310,7 +377,7 @@ export function Visa() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="text-3xl">{country.flag}</span>
+                    <FlagImg iso3={country.code} size={32} />
                     <div>
                       <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
                         {country.name}
