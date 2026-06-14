@@ -26,6 +26,8 @@ import { Destinations } from "@/pages/destinations";
 import { FAQ } from "@/pages/faq";
 import { Terms } from "@/pages/terms";
 import { Privacy } from "@/pages/privacy";
+import { Trains } from "@/pages/trains";
+import { TrainBookingPage } from "@/pages/train-booking";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +60,8 @@ function Router() {
             <Route path="/faq" component={FAQ} />
             <Route path="/terms" component={Terms} />
             <Route path="/privacy" component={Privacy} />
+            <Route path="/trains" component={Trains} />
+            <Route path="/trains/book" component={TrainBookingPage} />
             <Route component={NotFound} />
           </Switch>
         </Layout>

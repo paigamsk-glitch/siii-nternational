@@ -1,0 +1,173 @@
+**Replit Development Prompt: Add Realistic Train Ticket Search & Booking System**
+
+I have an existing travel website named **S International**. I want to add a working **Train Ticket Booking feature** similar to ixigo / railway booking websites.
+
+Important:
+
+* Do NOT change my existing website colors, fonts, header, background, or premium travel design.
+* The new train section must look like it belongs to the existing website.
+
+## 1. Add Train Tab
+
+In my existing booking widget where I have:
+
+Flights | Hotels | Packages
+
+Add:
+
+Flights | Train | Hotels | Packages
+
+The Train tab should have the same size, animation, icon style, spacing, and colors.
+
+## 2. Train Search Interface
+
+When user clicks Train, replace the booking form with:
+
+From Station:
+
+* Search input
+* Station autocomplete
+
+To Station:
+
+* Search input
+* Station autocomplete
+
+Journey Date:
+
+* Date picker
+
+Class:
+
+* Sleeper
+* AC 3 Tier
+* AC 2 Tier
+* AC First Class
+
+Passengers:
+
+* Adult
+* Child
+
+Button:
+"Search Trains"
+
+## 3. Train Search Logic
+
+I need this to work.
+
+When user searches:
+
+Example:
+
+From:
+Delhi
+
+To:
+Mumbai
+
+The system should return:
+
+Train Name
+Train Number
+Departure Time
+Arrival Time
+Duration
+Running Days
+Available Classes
+Seat Availability
+Ticket Fare
+
+Example result card:
+
+Rajdhani Express
+12951
+
+Delhi → Mumbai
+
+Departure:
+16:55
+
+Arrival:
+08:35
+
+Duration:
+15h 40m
+
+Seats:
+Available
+
+Fare:
+₹2500
+
+Buttons:
+View Seats
+Book Now
+
+## 4. API Requirement
+
+Find the best temporary solution.
+
+Priority order:
+
+1. Use a free/temporary railway API if available.
+
+2. If a railway API is not available:
+   Create an API service layer so later I can connect:
+
+* IRCTC API
+* RapidAPI railway API
+* Any railway provider
+
+3. Do not use hardcoded data only.
+
+4. Do not scrape Google pages.
+
+If Google search data is needed:
+Use a safe search/API method only as a fallback to collect public train information.
+
+## 5. Booking Flow
+
+When user clicks Book Now:
+
+Open booking page:
+
+Passenger details:
+
+* Name
+* Age
+* Gender
+* Contact 
+* addhar number 
+
+Seat/Class selection
+
+Payment placeholder
+
+Booking confirmation page
+
+## 6. Code Structure
+
+Create separate components:
+
+TrainSearch.jsx
+
+TrainResults.jsx
+
+TrainCard.jsx
+
+TrainBooking.jsx
+
+trainApi.js
+
+Keep code clean and production ready.
+
+## 7. Responsive
+
+Make it work on:
+
+Desktop
+
+The final result should look like a premium travel booking platform.
+
+Do not disturb existing Flight, Hotel, Package sections.
