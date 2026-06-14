@@ -30,6 +30,7 @@ import { Trains } from "@/pages/trains";
 import { TrainBookingPage } from "@/pages/train-booking";
 import { TrainCheckout } from "@/pages/train-checkout";
 import { PNRStatus } from "@/pages/pnr";
+import { LiveTrainStatus } from "@/pages/live-status";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +67,7 @@ function Router() {
             <Route path="/trains/book" component={TrainBookingPage} />
             <Route path="/train-checkout" component={TrainCheckout} />
             <Route path="/pnr" component={PNRStatus} />
+            <Route path="/live-status" component={LiveTrainStatus} />
             <Route component={NotFound} />
           </Switch>
         </Layout>

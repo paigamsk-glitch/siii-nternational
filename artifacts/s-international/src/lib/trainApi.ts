@@ -733,6 +733,273 @@ export function searchStations(query: string): TrainStation[] {
   ).slice(0, 10);
 }
 
+// ─── Live Train Status ────────────────────────────────────────────────────────
+
+export interface TrainStopSchedule {
+  name: string;
+  code: string;
+  distance: number;           // km from origin
+  scheduledArrival: string;   // "HH:MM" or "" for source
+  scheduledDeparture: string; // "HH:MM" or "" for dest
+  day: number;                // 1, 2, 3…
+  platform: number;
+  haltMins: number;           // 0 at origin/destination
+}
+
+export interface LiveStopResult extends TrainStopSchedule {
+  status: "departed" | "current" | "upcoming";
+  actualArrival?: string;
+  actualDeparture?: string;
+  delayMins: number;
+}
+
+export interface TrainLiveStatusResult {
+  trainNumber: string;
+  trainName: string;
+  trainType: string;
+  from: string;
+  fromCode: string;
+  to: string;
+  toCode: string;
+  runningDays: string[];
+  delayMins: number;
+  currentStopIdx: number;
+  percentComplete: number;
+  currentBetween?: [string, string]; // [prev, next] station names when moving
+  lastUpdated: string;
+  stops: LiveStopResult[];
+  found: boolean;
+}
+
+// ── Timetable data for major trains ──────────────────────────────────────────
+const TRAIN_STOPS: Record<string, TrainStopSchedule[]> = {
+  "12951": [ // Mumbai Rajdhani Express NDLS→MMCT
+    { name: "New Delhi",       code: "NDLS", distance: 0,    scheduledArrival: "",      scheduledDeparture: "16:55", day: 1, platform: 16, haltMins: 0 },
+    { name: "Mathura Junction",code: "MTJ",  distance: 141,  scheduledArrival: "18:15", scheduledDeparture: "18:17", day: 1, platform: 3,  haltMins: 2 },
+    { name: "Kota Junction",   code: "KOTA", distance: 468,  scheduledArrival: "21:35", scheduledDeparture: "21:40", day: 1, platform: 1,  haltMins: 5 },
+    { name: "Ratlam Junction", code: "RTM",  distance: 660,  scheduledArrival: "00:15", scheduledDeparture: "00:20", day: 2, platform: 1,  haltMins: 5 },
+    { name: "Vadodara Junction",code:"BRC",  distance: 968,  scheduledArrival: "03:15", scheduledDeparture: "03:20", day: 2, platform: 2,  haltMins: 5 },
+    { name: "Surat",           code: "ST",   distance: 1115, scheduledArrival: "04:40", scheduledDeparture: "04:42", day: 2, platform: 1,  haltMins: 2 },
+    { name: "Borivali",        code: "BVI",  distance: 1341, scheduledArrival: "07:32", scheduledDeparture: "07:34", day: 2, platform: 5,  haltMins: 2 },
+    { name: "Mumbai Central",  code: "MMCT", distance: 1384, scheduledArrival: "08:35", scheduledDeparture: "",      day: 2, platform: 1,  haltMins: 0 },
+  ],
+  "12952": [ // Mumbai Rajdhani Return MMCT→NDLS
+    { name: "Mumbai Central",  code: "MMCT", distance: 0,    scheduledArrival: "",      scheduledDeparture: "17:05", day: 1, platform: 1,  haltMins: 0 },
+    { name: "Borivali",        code: "BVI",  distance: 43,   scheduledArrival: "17:40", scheduledDeparture: "17:42", day: 1, platform: 5,  haltMins: 2 },
+    { name: "Surat",           code: "ST",   distance: 269,  scheduledArrival: "20:15", scheduledDeparture: "20:17", day: 1, platform: 1,  haltMins: 2 },
+    { name: "Vadodara Junction",code:"BRC",  distance: 416,  scheduledArrival: "21:40", scheduledDeparture: "21:45", day: 1, platform: 2,  haltMins: 5 },
+    { name: "Ratlam Junction", code: "RTM",  distance: 724,  scheduledArrival: "00:55", scheduledDeparture: "01:00", day: 2, platform: 1,  haltMins: 5 },
+    { name: "Kota Junction",   code: "KOTA", distance: 916,  scheduledArrival: "03:55", scheduledDeparture: "04:00", day: 2, platform: 1,  haltMins: 5 },
+    { name: "Mathura Junction",code: "MTJ",  distance: 1243, scheduledArrival: "07:00", scheduledDeparture: "07:02", day: 2, platform: 3,  haltMins: 2 },
+    { name: "New Delhi",       code: "NDLS", distance: 1384, scheduledArrival: "08:35", scheduledDeparture: "",      day: 2, platform: 16, haltMins: 0 },
+  ],
+  "12301": [ // Howrah Rajdhani NDLS→HWH
+    { name: "New Delhi",          code: "NDLS", distance: 0,    scheduledArrival: "",      scheduledDeparture: "16:55", day: 1, platform: 5,  haltMins: 0 },
+    { name: "Kanpur Central",     code: "CNB",  distance: 440,  scheduledArrival: "21:45", scheduledDeparture: "21:50", day: 1, platform: 4,  haltMins: 5 },
+    { name: "Allahabad Junction", code: "ALD",  distance: 634,  scheduledArrival: "23:55", scheduledDeparture: "00:00", day: 2, platform: 6,  haltMins: 5 },
+    { name: "Varanasi Junction",  code: "BSB",  distance: 791,  scheduledArrival: "02:30", scheduledDeparture: "02:35", day: 2, platform: 1,  haltMins: 5 },
+    { name: "Gaya Junction",      code: "GAYA", distance: 997,  scheduledArrival: "05:10", scheduledDeparture: "05:15", day: 2, platform: 2,  haltMins: 5 },
+    { name: "Dhanbad Junction",   code: "DHN",  distance: 1155, scheduledArrival: "07:25", scheduledDeparture: "07:30", day: 2, platform: 3,  haltMins: 5 },
+    { name: "Howrah Junction",    code: "HWH",  distance: 1448, scheduledArrival: "10:00", scheduledDeparture: "",      day: 2, platform: 9,  haltMins: 0 },
+  ],
+  "12621": [ // Tamil Nadu Express NDLS→MAS
+    { name: "New Delhi",          code: "NDLS", distance: 0,    scheduledArrival: "",      scheduledDeparture: "22:30", day: 1, platform: 2,  haltMins: 0 },
+    { name: "Agra Cantt",         code: "AGC",  distance: 190,  scheduledArrival: "00:40", scheduledDeparture: "00:45", day: 2, platform: 1,  haltMins: 5 },
+    { name: "Bhopal Junction",    code: "BPL",  distance: 706,  scheduledArrival: "06:45", scheduledDeparture: "06:55", day: 2, platform: 3,  haltMins: 10},
+    { name: "Nagpur Junction",    code: "NGP",  distance: 1093, scheduledArrival: "13:30", scheduledDeparture: "13:45", day: 2, platform: 1,  haltMins: 15},
+    { name: "Warangal",           code: "WL",   distance: 1492, scheduledArrival: "21:35", scheduledDeparture: "21:40", day: 2, platform: 2,  haltMins: 5 },
+    { name: "Vijayawada Junction",code: "BZA",  distance: 1651, scheduledArrival: "00:25", scheduledDeparture: "00:30", day: 3, platform: 1,  haltMins: 5 },
+    { name: "Gudur Junction",     code: "GDR",  distance: 1875, scheduledArrival: "03:55", scheduledDeparture: "04:00", day: 3, platform: 1,  haltMins: 5 },
+    { name: "Chennai Central",    code: "MAS",  distance: 2182, scheduledArrival: "07:40", scheduledDeparture: "",      day: 3, platform: 8,  haltMins: 0 },
+  ],
+  "12009": [ // Mumbai Shatabdi MMCT→ADI
+    { name: "Mumbai Central",  code: "MMCT", distance: 0,   scheduledArrival: "",      scheduledDeparture: "06:25", day: 1, platform: 1,  haltMins: 0 },
+    { name: "Bharuch Junction",code: "BH",   distance: 206, scheduledArrival: "08:45", scheduledDeparture: "08:47", day: 1, platform: 2,  haltMins: 2 },
+    { name: "Surat",           code: "ST",   distance: 261, scheduledArrival: "09:35", scheduledDeparture: "09:40", day: 1, platform: 3,  haltMins: 5 },
+    { name: "Vadodara Junction",code:"BRC",  distance: 391, scheduledArrival: "11:00", scheduledDeparture: "11:05", day: 1, platform: 4,  haltMins: 5 },
+    { name: "Anand Junction",  code: "ANND", distance: 436, scheduledArrival: "11:35", scheduledDeparture: "11:37", day: 1, platform: 1,  haltMins: 2 },
+    { name: "Ahmedabad Junction",code:"ADI", distance: 493, scheduledArrival: "13:10", scheduledDeparture: "",      day: 1, platform: 1,  haltMins: 0 },
+  ],
+  "12007": [ // Chennai Shatabdi MAS→SBC
+    { name: "Chennai Central",    code: "MAS", distance: 0,   scheduledArrival: "",      scheduledDeparture: "06:00", day: 1, platform: 8,  haltMins: 0 },
+    { name: "Katpadi Junction",   code: "KPD", distance: 130, scheduledArrival: "08:10", scheduledDeparture: "08:15", day: 1, platform: 2,  haltMins: 5 },
+    { name: "Jolarpettai Junction",code:"JTJ", distance: 187, scheduledArrival: "08:55", scheduledDeparture: "08:57", day: 1, platform: 1,  haltMins: 2 },
+    { name: "Bangalore Cantt",    code: "BNC", distance: 358, scheduledArrival: "10:35", scheduledDeparture: "10:37", day: 1, platform: 3,  haltMins: 2 },
+    { name: "Bangalore City Jn",  code: "SBC", distance: 362, scheduledArrival: "11:00", scheduledDeparture: "",      day: 1, platform: 1,  haltMins: 0 },
+  ],
+  "12759": [ // Charminar SF Express HYB→MAS
+    { name: "Hyderabad Deccan",   code: "HYB", distance: 0,   scheduledArrival: "",      scheduledDeparture: "18:15", day: 1, platform: 1,  haltMins: 0 },
+    { name: "Nalgonda",           code: "NLDA",distance: 87,  scheduledArrival: "19:30", scheduledDeparture: "19:32", day: 1, platform: 1,  haltMins: 2 },
+    { name: "Miryalaguda",        code: "MYL", distance: 135, scheduledArrival: "20:18", scheduledDeparture: "20:20", day: 1, platform: 1,  haltMins: 2 },
+    { name: "Gudur Junction",     code: "GDR", distance: 405, scheduledArrival: "00:40", scheduledDeparture: "00:45", day: 2, platform: 2,  haltMins: 5 },
+    { name: "Renigunta Junction", code: "RU",  distance: 505, scheduledArrival: "02:30", scheduledDeparture: "02:35", day: 2, platform: 1,  haltMins: 5 },
+    { name: "Chennai Central",    code: "MAS", distance: 794, scheduledArrival: "06:00", scheduledDeparture: "",      day: 2, platform: 8,  haltMins: 0 },
+  ],
+  "12015": [ // Ajmer Shatabdi NDLS→JP
+    { name: "New Delhi",        code: "NDLS", distance: 0,   scheduledArrival: "",      scheduledDeparture: "06:05", day: 1, platform: 9,  haltMins: 0 },
+    { name: "Gurgaon",          code: "GGN",  distance: 32,  scheduledArrival: "06:38", scheduledDeparture: "06:40", day: 1, platform: 1,  haltMins: 2 },
+    { name: "Alwar",            code: "AWR",  distance: 154, scheduledArrival: "08:00", scheduledDeparture: "08:02", day: 1, platform: 2,  haltMins: 2 },
+    { name: "Jaipur Junction",  code: "JP",   distance: 303, scheduledArrival: "10:35", scheduledDeparture: "",      day: 1, platform: 1,  haltMins: 0 },
+  ],
+  "12029": [ // Amritsar Shatabdi NDLS→ASR
+    { name: "New Delhi",         code: "NDLS", distance: 0,   scheduledArrival: "",      scheduledDeparture: "07:20", day: 1, platform: 5,  haltMins: 0 },
+    { name: "Ambala Cantt",      code: "UMB",  distance: 195, scheduledArrival: "09:25", scheduledDeparture: "09:27", day: 1, platform: 1,  haltMins: 2 },
+    { name: "Ludhiana Junction", code: "LDH",  distance: 313, scheduledArrival: "10:40", scheduledDeparture: "10:45", day: 1, platform: 2,  haltMins: 5 },
+    { name: "Jalandhar City",    code: "JUC",  distance: 368, scheduledArrival: "11:25", scheduledDeparture: "11:27", day: 1, platform: 3,  haltMins: 2 },
+    { name: "Amritsar Junction", code: "ASR",  distance: 447, scheduledArrival: "13:15", scheduledDeparture: "",      day: 1, platform: 1,  haltMins: 0 },
+  ],
+  "12627": [ // Karnataka Express NDLS→SBC
+    { name: "New Delhi",          code: "NDLS", distance: 0,    scheduledArrival: "",      scheduledDeparture: "21:20", day: 1, platform: 4,  haltMins: 0 },
+    { name: "Agra Cantt",         code: "AGC",  distance: 190,  scheduledArrival: "23:40", scheduledDeparture: "23:45", day: 1, platform: 1,  haltMins: 5 },
+    { name: "Jhansi Junction",    code: "JHS",  distance: 403,  scheduledArrival: "02:10", scheduledDeparture: "02:15", day: 2, platform: 1,  haltMins: 5 },
+    { name: "Bhopal Junction",    code: "BPL",  distance: 706,  scheduledArrival: "06:00", scheduledDeparture: "06:10", day: 2, platform: 2,  haltMins: 10},
+    { name: "Nagpur Junction",    code: "NGP",  distance: 1093, scheduledArrival: "12:40", scheduledDeparture: "12:50", day: 2, platform: 1,  haltMins: 10},
+    { name: "Wadi Junction",      code: "WADI", distance: 1402, scheduledArrival: "18:55", scheduledDeparture: "19:00", day: 2, platform: 2,  haltMins: 5 },
+    { name: "Bangalore City Jn",  code: "SBC",  distance: 2059, scheduledArrival: "06:45", scheduledDeparture: "",      day: 3, platform: 1,  haltMins: 0 },
+  ],
+  "10111": [ // Konkan Kanya Express CSTM→MAO
+    { name: "Chhatrapati Shivaji Terminus",code:"CSTM",distance:0,   scheduledArrival: "",      scheduledDeparture: "23:00", day: 1, platform: 11, haltMins: 0 },
+    { name: "Panvel",             code: "PNVL", distance: 56,  scheduledArrival: "23:58", scheduledDeparture: "00:00", day: 2, platform: 1,  haltMins: 2 },
+    { name: "Roha",               code: "ROHA", distance: 115, scheduledArrival: "01:10", scheduledDeparture: "01:12", day: 2, platform: 1,  haltMins: 2 },
+    { name: "Ratnagiri",          code: "RN",   distance: 360, scheduledArrival: "05:05", scheduledDeparture: "05:10", day: 2, platform: 1,  haltMins: 5 },
+    { name: "Kudal",              code: "KUDL", distance: 510, scheduledArrival: "08:20", scheduledDeparture: "08:22", day: 2, platform: 1,  haltMins: 2 },
+    { name: "Goa Madgaon",        code: "MAO",  distance: 582, scheduledArrival: "11:40", scheduledDeparture: "",      day: 2, platform: 1,  haltMins: 0 },
+  ],
+};
+
+function timeToMins(t: string): number {
+  if (!t) return -1;
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+}
+
+function minsToTime(m: number): string {
+  const h = Math.floor(((m % 1440) + 1440) % 1440 / 60);
+  const min = ((m % 1440) + 1440) % 1440 % 60;
+  return `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+}
+
+// Deterministic delay per train (5–55 mins)
+function trainDelay(trainNumber: string): number {
+  const seed = trainNumber.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  const delays = [0, 0, 5, 8, 12, 15, 18, 22, 28, 33, 42, 55];
+  return delays[seed % delays.length];
+}
+
+export function getTrainLiveStatus(trainNumber: string): TrainLiveStatusResult | null {
+  const schedule = TRAIN_STOPS[trainNumber];
+  const trainMeta = ALL_TRAINS.find((t) => t.number === trainNumber);
+
+  if (!schedule || !trainMeta) {
+    // Return a not-found result
+    return null;
+  }
+
+  const delayMins = trainDelay(trainNumber);
+  const now = new Date();
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+
+  // Convert each stop's departure/arrival to absolute minutes accounting for multi-day
+  const depBaseMins = timeToMins(schedule[0].scheduledDeparture);
+
+  // Build absolute minutes for each stop relative to departure (day 1 = 0..1439, day 2 = 1440..2879…)
+  function absTime(stop: TrainStopSchedule, useArr: boolean): number {
+    const t = useArr ? stop.scheduledArrival : stop.scheduledDeparture;
+    if (!t) return -1;
+    return (stop.day - 1) * 1440 + timeToMins(t);
+  }
+
+  const depAbs = absTime(schedule[0], false); // always day 1 departure
+
+  // Elapsed minutes since departure (using today's clock, wrapping)
+  let elapsedMins = ((nowMins - depBaseMins) + 1440) % 1440;
+  // If departure is in the future (train hasn't started yet), elapsed = -ve (show as "Not yet departed")
+  if (nowMins < depBaseMins && nowMins < depBaseMins - 60) {
+    elapsedMins = 0; // treat as just departed
+  }
+
+  // Determine current position among stops
+  let currentStopIdx = 0;
+  for (let i = 0; i < schedule.length; i++) {
+    const stop = schedule[i];
+    const depAbs_i = absTime(stop, false);
+    const arrAbs_i = absTime(stop, true);
+    const refAbs = depAbs_i >= 0 ? depAbs_i : arrAbs_i;
+    const stopElapsed = (refAbs - depAbs + 1440) % 1440;
+    if (stopElapsed <= elapsedMins) {
+      currentStopIdx = i;
+    }
+  }
+
+  // Cap at last stop
+  if (currentStopIdx >= schedule.length - 1) currentStopIdx = schedule.length - 1;
+
+  const totalDistance = schedule[schedule.length - 1].distance;
+  const currentDistance = schedule[currentStopIdx].distance;
+  const percentComplete = Math.round((currentDistance / totalDistance) * 100);
+
+  // Build live stops
+  const stops: LiveStopResult[] = schedule.map((stop, idx) => {
+    let status: "departed" | "current" | "upcoming";
+    if (idx < currentStopIdx) status = "departed";
+    else if (idx === currentStopIdx) status = "current";
+    else status = "upcoming";
+
+    const arrSched = stop.scheduledArrival;
+    const depSched = stop.scheduledDeparture;
+
+    let actualArrival: string | undefined;
+    let actualDeparture: string | undefined;
+
+    if (status === "departed") {
+      actualArrival = arrSched ? minsToTime(timeToMins(arrSched) + delayMins) : undefined;
+      actualDeparture = depSched ? minsToTime(timeToMins(depSched) + delayMins) : undefined;
+    } else if (status === "current") {
+      actualArrival = arrSched ? minsToTime(timeToMins(arrSched) + delayMins) : undefined;
+    } else {
+      // upcoming — show expected (sched + delay)
+      actualArrival = arrSched ? minsToTime(timeToMins(arrSched) + delayMins) : undefined;
+      actualDeparture = depSched ? minsToTime(timeToMins(depSched) + delayMins) : undefined;
+    }
+
+    return { ...stop, status, actualArrival, actualDeparture, delayMins: status === "upcoming" ? delayMins : delayMins };
+  });
+
+  // "Between" label for when train is moving
+  let currentBetween: [string, string] | undefined;
+  if (currentStopIdx < schedule.length - 1) {
+    currentBetween = [schedule[currentStopIdx].name, schedule[currentStopIdx + 1].name];
+  }
+
+  const updMins = [2, 3, 4, 5, 7, 8, 10];
+  const lastUpdated = `${updMins[parseInt(trainNumber.slice(-1)) % updMins.length]} mins ago`;
+
+  return {
+    trainNumber: trainMeta.number,
+    trainName: trainMeta.name,
+    trainType: trainMeta.type,
+    from: trainMeta.from.city,
+    fromCode: trainMeta.from.code,
+    to: trainMeta.to.city,
+    toCode: trainMeta.to.code,
+    runningDays: trainMeta.runningDays,
+    delayMins,
+    currentStopIdx,
+    percentComplete,
+    currentBetween,
+    lastUpdated,
+    stops,
+    found: true,
+  };
+}
+
+export function getLiveStatusTrains(): { number: string; name: string; from: string; to: string }[] {
+  return Object.keys(TRAIN_STOPS).map((num) => {
+    const t = ALL_TRAINS.find((x) => x.number === num);
+    return t ? { number: t.number, name: t.name, from: t.from.city, to: t.to.city } : null;
+  }).filter(Boolean) as { number: string; name: string; from: string; to: string }[];
+}
+
 export const CLASS_LABELS: Record<string, string> = {
   "1A": "AC First Class",
   "2A": "AC 2 Tier",

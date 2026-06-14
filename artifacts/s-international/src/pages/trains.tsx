@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { format, parseISO } from "date-fns";
 import {
   Train, ArrowRight, ArrowLeftRight, CheckCircle,
-  AlertCircle, Calendar as CalendarIcon, Sparkles, MapPin, Clock, Search
+  AlertCircle, Calendar as CalendarIcon, Sparkles, MapPin, Clock, Search, Radio
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -398,13 +398,20 @@ export function Trains() {
               Train Booking
             </span>
           </div>
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-8 gap-3 flex-wrap">
             <h1 className="text-4xl font-serif font-bold">Book Train Tickets</h1>
-            <Link href="/pnr">
-              <button className="flex items-center gap-2 bg-white/15 hover:bg-white/25 text-white border border-white/30 rounded-xl px-4 py-2 text-sm font-semibold transition-all backdrop-blur-sm">
-                <Search className="w-3.5 h-3.5" /> PNR Status
-              </button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/live-status">
+                <button className="flex items-center gap-2 bg-orange-500/80 hover:bg-orange-500 text-white border border-orange-400/50 rounded-xl px-4 py-2 text-sm font-semibold transition-all backdrop-blur-sm">
+                  <Radio className="w-3.5 h-3.5 animate-pulse" /> Live Status
+                </button>
+              </Link>
+              <Link href="/pnr">
+                <button className="flex items-center gap-2 bg-white/15 hover:bg-white/25 text-white border border-white/30 rounded-xl px-4 py-2 text-sm font-semibold transition-all backdrop-blur-sm">
+                  <Search className="w-3.5 h-3.5" /> PNR Status
+                </button>
+              </Link>
+            </div>
           </div>
 
           <div className="bg-white/10 backdrop-blur-md text-foreground rounded-2xl shadow-2xl border border-white/20 p-6">
