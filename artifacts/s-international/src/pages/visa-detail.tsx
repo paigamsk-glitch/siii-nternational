@@ -86,6 +86,9 @@ export function VisaDetail() {
   const [travelDate, setTravelDate] = useState(initDate);
   const [travellerCount, setTravellerCount] = useState(1);
   const [docsOpen, setDocsOpen] = useState(true);
+  const [selectedOptionalDocs, setSelectedOptionalDocs] = useState<Set<string>>(
+    () => new Set((country?.visaTypes[0]?.documents ?? []).filter(d => !d.required).map(d => d.id))
+  );
 
   // Traveller form
   const [travellers, setTravellers] = useState([{ firstName: "", lastName: "", dob: "", passport: "", email: "", phone: "" }]);
@@ -287,7 +290,7 @@ export function VisaDetail() {
                   {country.visaTypes.map((vt) => (
                     <button
                       key={vt.id}
-                      onClick={() => setSelectedVisaId(vt.id)}
+                      onClick={() => { setSelectedVisaId(vt.id); setSelectedOptionalDocs(new Set(vt.documents.filter(d => !d.required).map(d => d.id))); }}
                       className={`relative text-left rounded-2xl border-2 p-5 min-w-[200px] max-w-[260px] transition-all ${
                         selectedVisaId === vt.id
                           ? "border-primary bg-primary text-primary-foreground shadow-lg"
@@ -349,15 +352,54 @@ export function VisaDetail() {
                       <motion.div key="docs" initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden">
                         <div className="px-5 pb-5">
                           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-                            {selectedVisa.documents.map((doc) => (
-                              <div key={doc.id} className="text-center">
-                                <DocIcon type={doc.icon} />
-                                <p className="text-xs text-foreground font-medium leading-snug">{doc.label}</p>
-                                {!doc.required && <p className="text-[10px] text-muted-foreground">(optional)</p>}
-                              </div>
-                            ))}
+                            {selectedVisa.documents.map((doc) => {
+                              const isOptional = !doc.required;
+                              const isIncluded = !isOptional || selectedOptionalDocs.has(doc.id);
+                              return (
+                                <div
+                                  key={doc.id}
+                                  className={`text-center relative rounded-xl p-1 transition-all ${
+                                    isOptional
+                                      ? isIncluded
+                                        ? "cursor-pointer hover:bg-muted/40"
+                                        : "cursor-pointer opacity-40 hover:opacity-60"
+                                      : ""
+                                  }`}
+                                  onClick={isOptional ? () => {
+                                    setSelectedOptionalDocs(prev => {
+                                      const next = new Set(prev);
+                                      if (next.has(doc.id)) next.delete(doc.id);
+                                      else next.add(doc.id);
+                                      return next;
+                                    });
+                                  } : undefined}
+                                  title={isOptional ? (isIncluded ? "Click to exclude this optional document" : "Click to include this optional document") : undefined}
+                                >
+                                  {isOptional && !isIncluded && (
+                                    <div className="absolute top-0 right-0 w-4 h-4 rounded-full bg-destructive/80 flex items-center justify-center">
+                                      <X className="h-2.5 w-2.5 text-white" />
+                                    </div>
+                                  )}
+                                  {isOptional && isIncluded && (
+                                    <div className="absolute top-0 right-0 w-4 h-4 rounded-full bg-accent flex items-center justify-center">
+                                      <CheckCircle2 className="h-2.5 w-2.5 text-white" />
+                                    </div>
+                                  )}
+                                  <DocIcon type={doc.icon} />
+                                  <p className="text-xs text-foreground font-medium leading-snug">{doc.label}</p>
+                                  {isOptional && (
+                                    <p className={`text-[10px] font-medium ${isIncluded ? "text-accent" : "text-muted-foreground"}`}>
+                                      {isIncluded ? "included" : "excluded"}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
-                          <div className="mt-4 p-3 bg-muted/40 rounded-xl text-xs text-muted-foreground space-y-1">
+                          <p className="text-[10px] text-muted-foreground mt-3 flex items-center gap-1">
+                            <span className="inline-block w-3 h-3 rounded-full bg-accent/80 shrink-0" /> Optional documents are included by default — click any to toggle them on or off.
+                          </p>
+                          <div className="mt-3 p-3 bg-muted/40 rounded-xl text-xs text-muted-foreground space-y-1">
                             <p className="font-semibold text-foreground/80">Note:</p>
                             <p>{country.countryNotes ?? "Additional documents may be required by the Embassy. Final decision is at the discretion of the Embassy."}</p>
                             <p className="text-accent font-medium flex items-center gap-1.5 mt-2">
@@ -463,7 +505,7 @@ export function VisaDetail() {
                 <div className="bg-card border border-card-border rounded-2xl p-5">
                   <h3 className="font-bold text-xs uppercase tracking-wider text-foreground mb-5">Upload Documents</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {selectedVisa.documents.map((doc) => (
+                    {selectedVisa.documents.filter(doc => doc.required || selectedOptionalDocs.has(doc.id)).map((doc) => (
                       <div key={doc.id}>
                         <input
                           type="file" accept=".pdf,.jpg,.jpeg,.png"
