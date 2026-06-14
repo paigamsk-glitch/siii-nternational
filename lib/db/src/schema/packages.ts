@@ -2,6 +2,7 @@ import { pgTable, text, uuid, timestamp, integer, numeric, jsonb, boolean, real 
 
 export const packagesTable = pgTable("packages", {
   id: uuid("id").primaryKey().defaultRandom(),
+  slug: text("slug").notNull().default(""),
   title: text("title").notNull(),
   destination: text("destination").notNull(),
   country: text("country").notNull().default(""),

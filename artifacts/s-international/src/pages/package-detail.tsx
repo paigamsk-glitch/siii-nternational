@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Star, Clock, Users, ChevronDown, ChevronUp, MapPin, Calendar,
   Shield, CheckCircle2, XCircle, Bed, ArrowLeft, Share2,
-  Heart, Camera
+  Heart, Camera, Loader2
 } from "lucide-react";
 
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -19,11 +19,76 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useBookingStore } from "@/lib/booking-store";
 
+const BASE_URL = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+interface NormalizedDetail {
+  id: string;
+  slug: string;
+  title: string;
+  destination: string;
+  country: string;
+  theme: string;
+  duration: number;
+  price: number;
+  originalPrice: number;
+  currency: string;
+  rating: number;
+  reviewCount: number;
+  description: string;
+  highlights: string[];
+  inclusions: string[];
+  exclusions: string[];
+  images: string[];
+  badge?: string;
+  maxGroupSize: number;
+  itinerary: Array<{ day: number; title: string; description: string; activities: string[] }>;
+}
+
+function normalizeDetail(p: any): NormalizedDetail {
+  const price = Number(p.offerPrice || p.price || 0);
+  const originalPrice = Number(p.offerPrice ? p.price : 0);
+  let badge: string | undefined;
+  if (p.isFeatured) badge = "Best Seller";
+  else if (p.isTrending) badge = "Trending";
+  const itinerary = Array.isArray(p.itinerary)
+    ? p.itinerary.map((d: any) => ({
+        day: d.day,
+        title: d.title || "",
+        description: d.description || "",
+        activities: Array.isArray(d.activities) ? d.activities : [],
+      }))
+    : [];
+  return {
+    id: p.id,
+    slug: p.slug || "",
+    title: p.title,
+    destination: p.destination,
+    country: p.country,
+    theme: p.theme,
+    duration: p.durationDays || (p.durationNights ? p.durationNights + 1 : p.duration || 0),
+    price,
+    originalPrice,
+    currency: p.currency || "INR",
+    rating: p.rating || 4.5,
+    reviewCount: p.reviewCount || 0,
+    description: p.overview || p.description || "",
+    highlights: Array.isArray(p.highlights) ? p.highlights : [],
+    inclusions: Array.isArray(p.inclusions) ? p.inclusions : [],
+    exclusions: Array.isArray(p.exclusions) ? p.exclusions : [],
+    images: Array.isArray(p.images) && p.images.length > 0 ? p.images : (p.imageUrl ? [p.imageUrl] : []),
+    badge,
+    maxGroupSize: p.maxTravelers || p.maxGroupSize || 15,
+    itinerary,
+  };
+}
+
 export function PackageDetail() {
   const [, params] = useRoute("/packages/:slug");
   const [, setLocation] = useLocation();
   const slug = params?.slug ?? "";
-  const pkg = getPackageBySlug(slug);
+
+  const [pkg, setPkg] = useState<NormalizedDetail | null>(null);
+  const [loadingPkg, setLoadingPkg] = useState(true);
 
   const setBookingItem = useBookingStore((state) => state.setBookingItem);
 
@@ -35,7 +100,33 @@ export function PackageDetail() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    setLoadingPkg(true);
+    fetch(`${BASE_URL}/api/packages/${slug}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.package) {
+          setPkg(normalizeDetail(data.package));
+        } else {
+          const staticPkg = getPackageBySlug(slug);
+          if (staticPkg) setPkg(normalizeDetail(staticPkg));
+          else setPkg(null);
+        }
+      })
+      .catch(() => {
+        const staticPkg = getPackageBySlug(slug);
+        if (staticPkg) setPkg(normalizeDetail(staticPkg));
+        else setPkg(null);
+      })
+      .finally(() => setLoadingPkg(false));
   }, [slug]);
+
+  if (loadingPkg) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!pkg) {
     return (
@@ -210,7 +301,9 @@ export function PackageDetail() {
                     exit={{ opacity: 0, y: -10 }}
                     className="space-y-3"
                   >
-                    {pkg.itinerary.map((day, i) => (
+                    {pkg.itinerary.length === 0 ? (
+                      <p className="text-muted-foreground text-sm">Detailed itinerary coming soon.</p>
+                    ) : pkg.itinerary.map((day, i) => (
                       <div
                         key={day.day}
                         className="border border-border rounded-xl overflow-hidden"
@@ -248,14 +341,16 @@ export function PackageDetail() {
                                 <p className="text-muted-foreground text-sm mt-4 mb-4 leading-relaxed">
                                   {day.description}
                                 </p>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                  {day.activities.map((act, idx) => (
-                                    <div key={idx} className="flex items-center gap-2 text-sm">
-                                      <div className="w-1.5 h-1.5 rounded-full bg-secondary shrink-0" />
-                                      {act}
-                                    </div>
-                                  ))}
-                                </div>
+                                {day.activities.length > 0 && (
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    {day.activities.map((act, idx) => (
+                                      <div key={idx} className="flex items-center gap-2 text-sm">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-secondary shrink-0" />
+                                        {act}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             </motion.div>
                           )}
@@ -317,9 +412,9 @@ export function PackageDetail() {
                     {[
                       { icon: Clock, label: "Duration", value: `${pkg.duration} Days / ${pkg.duration - 1} Nights` },
                       { icon: Users, label: "Max Group Size", value: `${pkg.maxGroupSize} Travellers` },
-                      { icon: MapPin, label: "Difficulty", value: pkg.difficulty },
-                      { icon: Calendar, label: "Best Time to Visit", value: pkg.bestTime },
-                      { icon: Bed, label: "Accommodation", value: pkg.accommodation },
+                      { icon: MapPin, label: "Destination", value: `${pkg.destination}, ${pkg.country}` },
+                      { icon: Calendar, label: "Theme", value: pkg.theme },
+                      { icon: Bed, label: "Category", value: pkg.theme },
                       { icon: Shield, label: "Booking Security", value: "100% Secure & Encrypted" },
                     ].map(({ icon: Icon, label, value }) => (
                       <div key={label} className="flex items-start gap-4 bg-muted/30 rounded-xl p-4">

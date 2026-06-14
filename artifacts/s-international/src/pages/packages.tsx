@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import {
   Map, Clock, Star, Heart, Mountain, Umbrella, Building, Users,
-  Search, SlidersHorizontal, ArrowRight, CheckCircle2, Plane
+  Search, SlidersHorizontal, ArrowRight, CheckCircle2, Plane, Loader2
 } from "lucide-react";
-import { travelPackages, themes, type Theme } from "@/data/packages";
+import { themes, type Theme } from "@/data/packages";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+
+const BASE_URL = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const THEME_ICONS: Record<string, React.ReactNode> = {
   Romantic: <Heart className="w-4 h-4" />,
@@ -33,16 +35,69 @@ const DURATION_FILTERS = [
   { label: "8+ Days", min: 8, max: 999 },
 ];
 
+interface NormalizedPkg {
+  id: string;
+  slug: string;
+  title: string;
+  destination: string;
+  country: string;
+  theme: string;
+  duration: number;
+  price: number;
+  originalPrice: number;
+  rating: number;
+  reviewCount: number;
+  description: string;
+  highlights: string[];
+  images: string[];
+  badge?: string;
+}
+
+function normalizePkg(p: any): NormalizedPkg {
+  const price = Number(p.offerPrice || p.price || 0);
+  const originalPrice = Number(p.offerPrice ? p.price : 0);
+  let badge: string | undefined;
+  if (p.isFeatured) badge = "Best Seller";
+  else if (p.isTrending) badge = "Trending";
+  return {
+    id: p.id,
+    slug: p.slug || "",
+    title: p.title,
+    destination: p.destination,
+    country: p.country,
+    theme: p.theme,
+    duration: p.durationDays || p.durationNights + 1 || p.duration || 0,
+    price,
+    originalPrice,
+    rating: p.rating || 4.5,
+    reviewCount: p.reviewCount || 0,
+    description: p.overview || p.description || "",
+    highlights: Array.isArray(p.highlights) ? p.highlights : [],
+    images: Array.isArray(p.images) && p.images.length > 0 ? p.images : (p.imageUrl ? [p.imageUrl] : []),
+    badge,
+  };
+}
+
 export function Packages() {
   const [search, setSearch] = useState("");
   const [activeTheme, setActiveTheme] = useState<Theme | null>(null);
   const [activeDuration, setActiveDuration] = useState(0);
   const [sortBy, setSortBy] = useState("popular");
   const [showFilters, setShowFilters] = useState(false);
+  const [rawPackages, setRawPackages] = useState<NormalizedPkg[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/api/packages`)
+      .then(r => r.json())
+      .then(data => setRawPackages((data.packages || []).map(normalizePkg)))
+      .catch(() => setRawPackages([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   const durationFilter = DURATION_FILTERS[activeDuration];
 
-  const filtered = travelPackages
+  const filtered = rawPackages
     .filter((pkg) => {
       if (activeTheme && pkg.theme !== activeTheme) return false;
       if (pkg.duration < durationFilter.min || pkg.duration > durationFilter.max) return false;
@@ -201,11 +256,15 @@ export function Packages() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <p className="text-muted-foreground text-sm">
-            Showing <span className="font-semibold text-foreground">{filtered.length}</span> packages
+            {loading ? "Loading packages…" : <>Showing <span className="font-semibold text-foreground">{filtered.length}</span> packages</>}
           </p>
         </div>
 
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-24">
+            <Loader2 className="w-10 h-10 animate-spin text-primary" />
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-24 max-w-md mx-auto">
             <Map className="w-16 h-16 text-muted-foreground opacity-30 mx-auto mb-6" />
             <h3 className="text-2xl font-serif font-bold mb-3">No packages found</h3>
@@ -232,21 +291,15 @@ export function Packages() {
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-
-                  {/* Badge */}
                   {pkg.badge && (
                     <div className="absolute top-4 left-4 bg-secondary text-secondary-foreground text-xs font-bold px-3 py-1 rounded-full shadow">
                       {pkg.badge}
                     </div>
                   )}
-
-                  {/* Duration pill */}
                   <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5" />
                     {pkg.duration} Days
                   </div>
-
-                  {/* Theme pill */}
                   <div className="absolute bottom-4 right-4 bg-white/90 text-primary text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow">
                     {THEME_ICONS[pkg.theme]}
                     {pkg.theme}
@@ -262,7 +315,7 @@ export function Packages() {
                     <div className="flex items-center gap-1 text-xs font-medium bg-muted px-2 py-1 rounded-md">
                       <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                       <span>{pkg.rating}</span>
-                      <span className="text-muted-foreground">({pkg.reviewCount})</span>
+                      {pkg.reviewCount > 0 && <span className="text-muted-foreground">({pkg.reviewCount})</span>}
                     </div>
                   </div>
 
@@ -274,7 +327,6 @@ export function Packages() {
                     {pkg.description}
                   </p>
 
-                  {/* Top Highlights */}
                   <div className="space-y-1.5 mb-5">
                     {pkg.highlights.slice(0, 2).map((h, idx) => (
                       <div key={idx} className="flex items-center gap-2 text-xs text-foreground/80">

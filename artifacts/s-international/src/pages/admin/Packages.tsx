@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface Pkg {
   id: string;
+  slug: string;
   title: string;
   destination: string;
   country: string;
@@ -16,7 +17,9 @@ interface Pkg {
   price: string;
   offerPrice?: string;
   imageUrl: string;
+  images?: string[];
   rating: number;
+  reviewCount?: number;
   category: string;
   isFeatured: boolean;
   isTrending: boolean;
@@ -28,9 +31,9 @@ interface Pkg {
 }
 
 const emptyPkg = (): Partial<Pkg> => ({
-  title: "", destination: "", country: "", theme: "General",
+  slug: "", title: "", destination: "", country: "", theme: "General",
   durationNights: 3, durationDays: 4, price: "25000",
-  offerPrice: "", imageUrl: "", rating: 4.5, category: "Holiday",
+  offerPrice: "", imageUrl: "", rating: 4.5, reviewCount: 0, category: "Holiday",
   isFeatured: false, isTrending: false, isPublished: true,
   overview: "", inclusions: [], exclusions: [], highlights: [],
 });
@@ -223,6 +226,10 @@ export function Packages({ darkMode }: { darkMode: boolean }) {
                 <div className="md:col-span-2">
                   <label className="text-sm font-medium block mb-1">Package Title *</label>
                   <Input value={editing.title || ""} onChange={e => setEditing({ ...editing, title: e.target.value })} placeholder="e.g. Bali Honeymoon Paradise" className={input} />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-sm font-medium block mb-1">URL Slug <span className="text-muted-foreground">(used in page URL)</span></label>
+                  <Input value={editing.slug || ""} onChange={e => setEditing({ ...editing, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })} placeholder="e.g. bali-honeymoon-paradise" className={input} />
                 </div>
                 <div>
                   <label className="text-sm font-medium block mb-1">Destination *</label>

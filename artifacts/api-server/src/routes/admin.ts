@@ -51,13 +51,14 @@ router.get("/admin/packages", async (_req, res): Promise<void> => {
 
 router.post("/admin/packages", async (req, res): Promise<void> => {
   const {
-    title, destination, country, theme, durationNights, durationDays,
+    slug, title, destination, country, theme, durationNights, durationDays,
     price, offerPrice, overview, highlights, inclusions, exclusions,
     itinerary, images, imageUrl, rating, reviewCount, maxTravelers,
     category, isFeatured, isTrending, isPublished, departureDates, currency,
   } = req.body;
 
   const [pkg] = await db.insert(packagesTable).values({
+    slug: slug || title?.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "",
     title, destination, country: country || "", theme: theme || "",
     durationNights: durationNights || 0, durationDays: durationDays || 0,
     price: String(price || 0), offerPrice: offerPrice ? String(offerPrice) : null,
