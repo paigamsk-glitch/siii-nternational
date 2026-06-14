@@ -11,6 +11,10 @@ export interface TrainClass {
   fare: number;
   available: number;
   waitlist?: number;
+  tatkal?: boolean;
+  availType?: "GNWL" | "TQWL" | "RAC" | "AVAILABLE";
+  updatedMinsAgo?: number;
+  freeCancellation?: boolean;
 }
 
 export interface Train {
@@ -156,9 +160,12 @@ const ALL_TRAINS: Train[] = [
     runningDays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     type: "Rajdhani",
     classes: [
-      { code: "1A", label: "AC First Class", fare: 4895, available: 12 },
-      { code: "2A", label: "AC 2 Tier", fare: 2875, available: 34 },
-      { code: "3A", label: "AC 3 Tier", fare: 1990, available: 78 },
+      { code: "1A", label: "AC First Class", fare: 4895, available: 0, waitlist: 8, availType: "GNWL", updatedMinsAgo: 240, freeCancellation: true },
+      { code: "1A", label: "AC First Class", fare: 5270, available: 0, waitlist: 8, availType: "GNWL", tatkal: true, updatedMinsAgo: 480, freeCancellation: false },
+      { code: "2A", label: "AC 2 Tier", fare: 2875, available: 33, availType: "AVAILABLE", updatedMinsAgo: 15, freeCancellation: true },
+      { code: "2A", label: "AC 2 Tier", fare: 3650, available: 0, waitlist: 11, availType: "TQWL", tatkal: true, updatedMinsAgo: 420, freeCancellation: false },
+      { code: "3A", label: "AC 3 Tier", fare: 1990, available: 0, waitlist: 67, availType: "GNWL", updatedMinsAgo: 900, freeCancellation: true },
+      { code: "3A", label: "AC 3 Tier", fare: 2595, available: 0, waitlist: 14, availType: "TQWL", tatkal: true, updatedMinsAgo: 420, freeCancellation: false },
     ],
   },
   {
@@ -174,9 +181,11 @@ const ALL_TRAINS: Train[] = [
     runningDays: ["Mon", "Wed", "Fri", "Sun"],
     type: "Rajdhani",
     classes: [
-      { code: "1A", label: "AC First Class", fare: 4895, available: 8 },
-      { code: "2A", label: "AC 2 Tier", fare: 2875, available: 22 },
-      { code: "3A", label: "AC 3 Tier", fare: 1990, available: 0, waitlist: 14 },
+      { code: "1A", label: "AC First Class", fare: 4895, available: 8, availType: "AVAILABLE", updatedMinsAgo: 90, freeCancellation: true },
+      { code: "2A", label: "AC 2 Tier", fare: 2875, available: 22, availType: "AVAILABLE", updatedMinsAgo: 30, freeCancellation: true },
+      { code: "2A", label: "AC 2 Tier", fare: 3650, available: 0, waitlist: 11, availType: "TQWL", tatkal: true, updatedMinsAgo: 420, freeCancellation: false },
+      { code: "3A", label: "AC 3 Tier", fare: 1990, available: 0, waitlist: 14, availType: "GNWL", updatedMinsAgo: 30, freeCancellation: true },
+      { code: "3A", label: "AC 3 Tier", fare: 2490, available: 0, waitlist: 14, availType: "TQWL", tatkal: true, updatedMinsAgo: 420, freeCancellation: false },
     ],
   },
   {

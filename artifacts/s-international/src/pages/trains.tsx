@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { format, parseISO } from "date-fns";
 import {
   Train, ArrowRight, ArrowLeftRight, CheckCircle,
-  AlertCircle, Calendar as CalendarIcon, Sparkles, MapPin, Clock
+  AlertCircle, Calendar as CalendarIcon, Sparkles, MapPin, Clock, Search
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -18,7 +18,7 @@ import {
   type Train as TrainType, CLASS_LABELS, CLASS_ORDER
 } from "@/lib/trainApi";
 import { useBookingStore } from "@/lib/booking-store";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 
 const TYPE_COLORS: Record<string, string> = {
   Rajdhani: "bg-amber-100 text-amber-800 border-amber-200",
@@ -29,6 +29,34 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 const DAY_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+// ─── Availability helpers ─────────────────────────────────────────────────────
+function fmtUpdated(mins?: number): string {
+  if (!mins) return "";
+  if (mins < 60) return `Updated ${mins} min${mins !== 1 ? "s" : ""} ago`;
+  const h = Math.round(mins / 60);
+  return `Updated ${h} hr${h !== 1 ? "s" : ""} ago`;
+}
+
+function AvailBadge({ cls }: { cls: import("@/lib/trainApi").TrainClass }) {
+  if (cls.available > 0) {
+    const type = cls.availType === "AVAILABLE" ? "Avbl" : (cls.availType ?? "Avbl");
+    return (
+      <span className="text-[11px] font-bold text-green-600">
+        {type === "Avbl" ? `Avbl ${cls.available}` : `${type} ${cls.available}`}
+      </span>
+    );
+  }
+  if (cls.waitlist) {
+    const type = cls.availType ?? "GNWL";
+    return (
+      <span className="text-[11px] font-bold text-amber-600">
+        {type} {cls.waitlist}
+      </span>
+    );
+  }
+  return <span className="text-[11px] font-bold text-red-500">Not Avbl</span>;
+}
 
 // ─── TrainResultCard ──────────────────────────────────────────────────────────
 function TrainResultCard({
@@ -42,14 +70,14 @@ function TrainResultCard({
   onBook: (train: TrainType, classCode: string, fare: number) => void;
   index: number;
 }) {
-  // Default to cheapest available class
-  const cheapestClass = [...train.classes]
-    .filter((c) => c.available > 0)
-    .sort((a, b) => a.fare - b.fare)[0] ?? train.classes[train.classes.length - 1];
+  // Use index-based selection so duplicate codes (regular vs Tatkal) work
+  const defaultIdx = (() => {
+    const firstAvail = train.classes.findIndex((c) => c.available > 0 && !c.tatkal);
+    return firstAvail >= 0 ? firstAvail : 0;
+  })();
 
-  const [selectedCode, setSelectedCode] = useState(cheapestClass.code);
-
-  const selectedCls = train.classes.find((c) => c.code === selectedCode) ?? cheapestClass;
+  const [selectedIdx, setSelectedIdx] = useState(defaultIdx);
+  const selectedCls = train.classes[selectedIdx] ?? train.classes[0];
   const totalFare = selectedCls.fare * passengers;
 
   return (
@@ -59,7 +87,7 @@ function TrainResultCard({
       transition={{ delay: index * 0.06 }}
       className="bg-white rounded-2xl border border-border overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300"
     >
-      {/* Top header strip */}
+      {/* Header */}
       <div className="flex items-center justify-between px-5 pt-4 pb-2">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-primary/8 border border-primary/10 flex items-center justify-center">
@@ -75,9 +103,7 @@ function TrainResultCard({
             </p>
           </div>
         </div>
-        <Badge
-          className={`text-xs font-semibold border ${TYPE_COLORS[train.type] ?? TYPE_COLORS.Express}`}
-        >
+        <Badge className={`text-xs font-semibold border ${TYPE_COLORS[train.type] ?? TYPE_COLORS.Express}`}>
           {train.type}
         </Badge>
       </div>
@@ -89,7 +115,6 @@ function TrainResultCard({
           <p className="text-xs font-bold text-primary">{train.from.code}</p>
           <p className="text-xs text-muted-foreground">{train.from.city}</p>
         </div>
-
         <div className="flex-1 px-4 flex flex-col items-center gap-1">
           <span className="text-xs text-muted-foreground flex items-center gap-1">
             <Clock className="w-3 h-3" /> {train.duration}
@@ -106,9 +131,7 @@ function TrainResultCard({
               <span
                 key={d}
                 className={`text-[9px] font-bold px-0.5 rounded ${
-                  train.runningDays.includes(d)
-                    ? "text-primary"
-                    : "text-muted-foreground/30"
+                  train.runningDays.includes(d) ? "text-primary" : "text-muted-foreground/30"
                 }`}
               >
                 {d[0]}
@@ -116,7 +139,6 @@ function TrainResultCard({
             ))}
           </div>
         </div>
-
         <div className="text-right">
           <p className="text-2xl font-bold tabular-nums">{train.arrivalTime}</p>
           <p className="text-xs font-bold text-primary">{train.to.code}</p>
@@ -124,55 +146,62 @@ function TrainResultCard({
         </div>
       </div>
 
-      {/* Class selector row */}
+      {/* IRCTC-style class selector */}
       <div className="px-5 py-3">
-        <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-2">
+        <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-2.5">
           Select Class
         </p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-          {train.classes.map((cls) => {
-            const isSelected = cls.code === selectedCode;
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+          {train.classes.map((cls, i) => {
+            const isSelected = i === selectedIdx;
             return (
               <button
-                key={cls.code}
-                onClick={() => setSelectedCode(cls.code)}
+                key={`${cls.code}-${i}`}
+                onClick={() => setSelectedIdx(i)}
                 className={cn(
-                  "flex flex-col items-start p-2.5 rounded-xl border-2 transition-all text-left",
+                  "flex flex-col items-start p-3 rounded-xl border-2 transition-all text-left gap-0.5",
                   isSelected
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/40 hover:bg-muted/30"
+                    ? "border-primary bg-primary/5 shadow-sm"
+                    : "border-border hover:border-primary/40 hover:bg-muted/20"
                 )}
               >
-                <div className="flex items-center justify-between w-full mb-0.5">
-                  <span
-                    className={cn(
-                      "text-xs font-bold font-mono",
-                      isSelected ? "text-primary" : "text-foreground"
+                {/* Row 1: code + TATKAL badge + fare */}
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-1.5">
+                    <span className={cn("text-sm font-bold font-mono", isSelected ? "text-primary" : "text-foreground")}>
+                      {cls.code}
+                    </span>
+                    {cls.tatkal && (
+                      <span className="text-[10px] font-bold bg-orange-500 text-white px-1.5 py-0.5 rounded leading-none">
+                        TATKAL
+                      </span>
                     )}
-                  >
-                    {cls.code}
+                  </div>
+                  <span className={cn("text-sm font-bold tabular-nums", isSelected ? "text-primary" : "text-foreground")}>
+                    ₹{cls.fare.toLocaleString("en-IN")}
                   </span>
-                  {cls.available > 0 ? (
-                    <span className="text-[10px] text-green-600 font-semibold">
-                      {cls.available} avl
-                    </span>
-                  ) : (
-                    <span className="text-[10px] text-amber-500 font-semibold">
-                      WL {cls.waitlist}
-                    </span>
-                  )}
                 </div>
-                <p className="text-[10px] text-muted-foreground leading-tight line-clamp-1">
-                  {cls.label}
-                </p>
-                <p
-                  className={cn(
-                    "text-sm font-bold mt-1",
-                    isSelected ? "text-primary" : "text-foreground"
-                  )}
-                >
-                  ₹{cls.fare.toLocaleString("en-IN")}
-                </p>
+
+                {/* Row 2: Availability */}
+                <AvailBadge cls={cls} />
+
+                {/* Row 3: Free Cancellation */}
+                <span className={cn(
+                  "text-[10px] font-medium flex items-center gap-0.5",
+                  cls.freeCancellation ? "text-green-600" : "text-muted-foreground"
+                )}>
+                  {cls.freeCancellation
+                    ? <><CheckCircle className="w-2.5 h-2.5" /> Free Cancellation</>
+                    : "No Cancellation"
+                  }
+                </span>
+
+                {/* Row 4: Updated X hrs ago */}
+                {cls.updatedMinsAgo != null && (
+                  <span className="text-[10px] text-muted-foreground/70">
+                    {fmtUpdated(cls.updatedMinsAgo)}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -183,7 +212,9 @@ function TrainResultCard({
       <div className="px-5 pb-4 flex items-center justify-between gap-4 border-t border-border pt-3">
         <div>
           <p className="text-xs text-muted-foreground">
-            {passengers} × ₹{selectedCls.fare.toLocaleString("en-IN")} ({selectedCls.label})
+            {passengers} × ₹{selectedCls.fare.toLocaleString("en-IN")}
+            {" · "}{selectedCls.label}
+            {selectedCls.tatkal && <span className="text-orange-500 font-semibold ml-1">(Tatkal)</span>}
           </p>
           <p className="text-xl font-bold text-primary">
             ₹{totalFare.toLocaleString("en-IN")}
@@ -197,7 +228,9 @@ function TrainResultCard({
             ) : (
               <>
                 <AlertCircle className="w-3 h-3 text-amber-500" />
-                <span className="text-xs text-amber-600 font-medium">Waitlist</span>
+                <span className="text-xs text-amber-600 font-medium">
+                  {selectedCls.availType ?? "GNWL"} {selectedCls.waitlist}
+                </span>
               </>
             )}
             {selectedCls.available > 0 && selectedCls.available < 12 && (
@@ -208,9 +241,8 @@ function TrainResultCard({
           </div>
         </div>
         <Button
-          onClick={() => onBook(train, selectedCode, selectedCls.fare)}
+          onClick={() => onBook(train, selectedCls.code, selectedCls.fare)}
           className="hover-elevate bg-primary hover:bg-primary/90 rounded-xl font-semibold px-6"
-          disabled={selectedCls.available === 0 && !selectedCls.waitlist}
         >
           Book Now <ArrowRight className="w-4 h-4 ml-1" />
         </Button>
@@ -366,7 +398,14 @@ export function Trains() {
               Train Booking
             </span>
           </div>
-          <h1 className="text-4xl font-serif font-bold mb-8">Book Train Tickets</h1>
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-4xl font-serif font-bold">Book Train Tickets</h1>
+            <Link href="/pnr">
+              <button className="flex items-center gap-2 bg-white/15 hover:bg-white/25 text-white border border-white/30 rounded-xl px-4 py-2 text-sm font-semibold transition-all backdrop-blur-sm">
+                <Search className="w-3.5 h-3.5" /> PNR Status
+              </button>
+            </Link>
+          </div>
 
           <div className="bg-white/10 backdrop-blur-md text-foreground rounded-2xl shadow-2xl border border-white/20 p-6">
             <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-5">
