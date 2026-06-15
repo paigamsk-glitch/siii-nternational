@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useRoute, useLocation, Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Star, Clock, Users, ChevronDown, ChevronUp, MapPin, Calendar,
   Shield, CheckCircle2, XCircle, Bed, ArrowLeft, Share2,
-  Heart, Camera, Loader2
+  Heart, Camera, Loader2, ChevronLeft, ChevronRight, X, Expand
 } from "lucide-react";
 
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -98,6 +98,36 @@ export function PackageDetail() {
   const [activeTab, setActiveTab] = useState<"itinerary" | "inclusions" | "info">("itinerary");
   const stickyRef = useRef<HTMLDivElement>(null);
 
+  // Lightbox
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIdx, setLightboxIdx] = useState(0);
+
+  const openLightbox = useCallback((i: number) => {
+    setLightboxIdx(i);
+    setLightboxOpen(true);
+  }, []);
+
+  const closeLightbox = useCallback(() => setLightboxOpen(false), []);
+
+  const lightboxPrev = useCallback(() =>
+    setLightboxIdx(i => (pkg ? (i - 1 + pkg.images.length) % pkg.images.length : 0)),
+  [pkg]);
+
+  const lightboxNext = useCallback(() =>
+    setLightboxIdx(i => (pkg ? (i + 1) % pkg.images.length : 0)),
+  [pkg]);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft") lightboxPrev();
+      if (e.key === "ArrowRight") lightboxNext();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [lightboxOpen, closeLightbox, lightboxPrev, lightboxNext]);
+
   useEffect(() => {
     window.scrollTo(0, 0);
     setLoadingPkg(true);
@@ -182,9 +212,18 @@ export function PackageDetail() {
         >
           {pkg.images.map((img, i) => (
             <SwiperSlide key={i}>
-              <div className="relative w-full h-full">
+              <div
+                className="relative w-full h-full group cursor-zoom-in"
+                onClick={() => openLightbox(i)}
+              >
                 <img src={img} alt={`${pkg.title} — image ${i + 1}`} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                {/* Zoom hint on hover */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                  <div className="bg-black/40 backdrop-blur-sm rounded-full p-3">
+                    <Expand className="w-6 h-6 text-white" />
+                  </div>
+                </div>
               </div>
             </SwiperSlide>
           ))}
@@ -241,7 +280,42 @@ export function PackageDetail() {
             <Share2 className="w-5 h-5" />
           </button>
         </div>
+
+        {/* View all photos button */}
+        {pkg.images.length > 1 && (
+          <button
+            onClick={() => openLightbox(0)}
+            className="absolute bottom-4 right-4 z-10 flex items-center gap-2 bg-white/90 hover:bg-white text-slate-800 text-xs font-semibold px-3 py-2 rounded-full shadow-lg backdrop-blur-sm transition-all hover:scale-105"
+          >
+            <Camera className="w-3.5 h-3.5" />
+            View all {pkg.images.length} photos
+          </button>
+        )}
       </div>
+
+      {/* Thumbnail strip */}
+      {pkg.images.length > 1 && (
+        <div className="bg-muted/40 border-b border-border">
+          <div className="container mx-auto px-4 max-w-7xl">
+            <div className="flex gap-2 overflow-x-auto py-2 scrollbar-hide">
+              {pkg.images.map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => openLightbox(i)}
+                  className={cn(
+                    "shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-all hover:scale-105",
+                    lightboxIdx === i && lightboxOpen
+                      ? "border-primary ring-2 ring-primary/30"
+                      : "border-transparent hover:border-primary/40"
+                  )}
+                >
+                  <img src={img} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-10 max-w-7xl">
@@ -602,6 +676,106 @@ export function PackageDetail() {
           Book Now
         </Button>
       </div>
+
+      {/* ── Lightbox Overlay ─────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {lightboxOpen && (
+          <motion.div
+            key="lightbox"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[100] flex flex-col bg-black/96 backdrop-blur-md"
+            onClick={closeLightbox}
+          >
+            {/* Top bar */}
+            <div
+              className="flex items-center justify-between px-5 py-4 shrink-0"
+              onClick={e => e.stopPropagation()}
+            >
+              <div>
+                <p className="text-white font-semibold text-sm">{pkg.title}</p>
+                <p className="text-white/50 text-xs mt-0.5">
+                  {lightboxIdx + 1} / {pkg.images.length}
+                </p>
+              </div>
+              <button
+                onClick={closeLightbox}
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Main image area */}
+            <div className="flex-1 flex items-center justify-center relative min-h-0 px-14">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={lightboxIdx}
+                  src={pkg.images[lightboxIdx]}
+                  alt={`${pkg.title} — photo ${lightboxIdx + 1}`}
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                  className="max-h-full max-w-full object-contain rounded-xl select-none"
+                  onClick={e => e.stopPropagation()}
+                  draggable={false}
+                />
+              </AnimatePresence>
+
+              {/* Prev arrow */}
+              {pkg.images.length > 1 && (
+                <button
+                  onClick={e => { e.stopPropagation(); lightboxPrev(); }}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+              )}
+
+              {/* Next arrow */}
+              {pkg.images.length > 1 && (
+                <button
+                  onClick={e => { e.stopPropagation(); lightboxNext(); }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              )}
+            </div>
+
+            {/* Bottom thumbnail strip */}
+            {pkg.images.length > 1 && (
+              <div
+                className="shrink-0 flex justify-center gap-2 px-4 py-4 overflow-x-auto scrollbar-hide"
+                onClick={e => e.stopPropagation()}
+              >
+                {pkg.images.map((img, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setLightboxIdx(i)}
+                    className={cn(
+                      "shrink-0 w-14 h-10 rounded-lg overflow-hidden border-2 transition-all",
+                      i === lightboxIdx
+                        ? "border-white scale-110 shadow-lg"
+                        : "border-white/20 opacity-50 hover:opacity-80 hover:border-white/50"
+                    )}
+                  >
+                    <img src={img} alt="" className="w-full h-full object-cover" draggable={false} />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Keyboard hint */}
+            <p className="text-center text-white/25 text-xs pb-3 shrink-0">
+              ← → to navigate · Esc to close
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
