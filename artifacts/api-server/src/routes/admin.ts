@@ -1,5 +1,6 @@
 import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
 import { db, packagesTable, hotelsAdminTable, destinationsAdminTable, cmsContentTable, usersTable, bookingsTable, blockedUsersTable } from "@workspace/db";
+import { reviewsTable } from "@workspace/db/schema";
 import { eq, desc, count, sum, sql } from "drizzle-orm";
 import { contactInquiriesTable } from "@workspace/db";
 
@@ -230,6 +231,53 @@ router.delete("/admin/inquiries/:id", async (req, res): Promise<void> => {
   const { id } = req.params;
   await db.delete(contactInquiriesTable).where(eq(contactInquiriesTable.id, id));
   res.json({ success: true });
+});
+
+// ── REVIEWS ────────────────────────────────────────────────────────────────
+router.get("/admin/reviews", async (_req, res): Promise<void> => {
+  try {
+    const rows = await db
+      .select({
+        id: reviewsTable.id,
+        packageId: reviewsTable.packageId,
+        packageTitle: packagesTable.title,
+        packageSlug: packagesTable.slug,
+        reviewerName: reviewsTable.reviewerName,
+        reviewerCity: reviewsTable.reviewerCity,
+        rating: reviewsTable.rating,
+        title: reviewsTable.title,
+        body: reviewsTable.body,
+        travelMonth: reviewsTable.travelMonth,
+        helpfulCount: reviewsTable.helpfulCount,
+        isVerified: reviewsTable.isVerified,
+        createdAt: reviewsTable.createdAt,
+      })
+      .from(reviewsTable)
+      .innerJoin(packagesTable, eq(reviewsTable.packageId, packagesTable.id))
+      .orderBy(desc(reviewsTable.createdAt));
+    res.json({ reviews: rows });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch reviews" });
+  }
+});
+
+router.delete("/admin/reviews/:id", async (req, res): Promise<void> => {
+  try {
+    await db.delete(reviewsTable).where(eq(reviewsTable.id, req.params.id));
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete review" });
+  }
+});
+
+router.patch("/admin/reviews/:id/verified", async (req, res): Promise<void> => {
+  try {
+    const { isVerified } = req.body;
+    await db.update(reviewsTable).set({ isVerified }).where(eq(reviewsTable.id, req.params.id));
+    res.json({ success: true, isVerified });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update review" });
+  }
 });
 
 // ── PUBLIC CMS READ (no auth required) ─────────────────────────────────────
