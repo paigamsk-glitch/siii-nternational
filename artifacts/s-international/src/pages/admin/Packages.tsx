@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Plus, Pencil, Trash2, Eye, EyeOff, Star, RefreshCw, X, Save,
   Loader2, ChevronDown, ChevronUp, GripVertical, MapPin, Calendar,
@@ -60,6 +60,9 @@ function ItineraryBuilder({
   inputCls: string;
 }) {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const dragNode = useRef<HTMLDivElement | null>(null);
 
   const addDay = () => {
     const next: ItineraryDay = { day: days.length + 1, title: "", description: "", activities: [] };
@@ -94,12 +97,64 @@ function ItineraryBuilder({
     updateDay(i, { activities: days[i].activities.filter((_, idx) => idx !== ai) });
   };
 
+  // ── Drag handlers ──────────────────────────────────────────────────────────
+  const handleDragStart = (e: React.DragEvent, i: number) => {
+    setDraggedIdx(i);
+    dragNode.current = e.currentTarget as HTMLDivElement;
+    e.dataTransfer.effectAllowed = "move";
+    // Ghost image: use the element itself but make it slightly transparent
+    e.dataTransfer.setDragImage(e.currentTarget, 20, 20);
+    // Delay so the dragged card renders ghosted rather than highlighted
+    setTimeout(() => dragNode.current?.classList.add("opacity-40"), 0);
+  };
+
+  const handleDragOver = (e: React.DragEvent, i: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (i !== draggedIdx) setDragOverIdx(i);
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIdx: number) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === dropIdx) {
+      cleanup();
+      return;
+    }
+    const reordered = [...days];
+    const [moved] = reordered.splice(draggedIdx, 1);
+    reordered.splice(dropIdx, 0, moved);
+    onChange(reordered.map((d, idx) => ({ ...d, day: idx + 1 })));
+    // Adjust expanded index to follow the moved card
+    setExpandedIdx(prev => {
+      if (prev === null) return null;
+      if (prev === draggedIdx) return dropIdx;
+      if (draggedIdx < dropIdx) {
+        if (prev > draggedIdx && prev <= dropIdx) return prev - 1;
+      } else {
+        if (prev >= dropIdx && prev < draggedIdx) return prev + 1;
+      }
+      return prev;
+    });
+    cleanup();
+  };
+
+  const handleDragEnd = () => {
+    dragNode.current?.classList.remove("opacity-40");
+    cleanup();
+  };
+
+  const cleanup = () => {
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+    dragNode.current = null;
+  };
+
   const ta = `w-full rounded-xl border px-3 py-2 text-sm resize-none ${
     darkMode ? "bg-slate-700 border-slate-600 text-white placeholder:text-slate-400" : "border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-400"
   }`;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1">
       {days.length === 0 && (
         <p className={`text-xs italic py-2 ${darkMode ? "text-slate-500" : "text-slate-400"}`}>
           No days added yet. Click "Add Day 1" to get started.
@@ -107,46 +162,79 @@ function ItineraryBuilder({
       )}
 
       {days.map((day, i) => (
-        <div
-          key={i}
-          className={`border rounded-xl overflow-hidden transition-all ${
-            darkMode ? "border-slate-600 bg-slate-700/40" : "border-slate-200 bg-white"
-          } ${expandedIdx === i ? (darkMode ? "border-blue-500/50" : "border-blue-200") : ""}`}
-        >
-          {/* Day header row */}
+        <div key={i}>
+          {/* Drop zone indicator — shown above the hovered card */}
+          {dragOverIdx === i && draggedIdx !== null && draggedIdx !== i && (
+            <div className="h-0.5 mx-2 bg-blue-500 rounded-full my-1 shadow-[0_0_6px_1px_rgba(59,130,246,0.6)]" />
+          )}
+
           <div
-            className={`flex items-center gap-2 px-3 py-2.5 cursor-pointer select-none transition-colors ${
-              darkMode ? "hover:bg-slate-700" : "hover:bg-slate-50"
-            }`}
-            onClick={() => setExpandedIdx(expandedIdx === i ? null : i)}
+            draggable
+            onDragStart={e => handleDragStart(e, i)}
+            onDragOver={e => handleDragOver(e, i)}
+            onDrop={e => handleDrop(e, i)}
+            onDragEnd={handleDragEnd}
+            className={`border rounded-xl overflow-hidden transition-all duration-150 ${
+              darkMode ? "border-slate-600 bg-slate-700/40" : "border-slate-200 bg-white"
+            } ${expandedIdx === i ? (darkMode ? "border-blue-500/50" : "border-blue-200") : ""}
+            ${draggedIdx === i ? "opacity-40 scale-[0.98]" : ""}
+            ${dragOverIdx === i && draggedIdx !== i ? (darkMode ? "border-blue-500 bg-blue-500/5" : "border-blue-400 bg-blue-50/50") : ""}`}
           >
-            <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
-              {day.day}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={`text-sm font-medium truncate ${!day.title ? (darkMode ? "text-slate-500" : "text-slate-400") : ""}`}>
-                {day.title || `Day ${day.day} — click to edit`}
-              </p>
-              {day.activities.length > 0 && (
-                <p className={`text-xs mt-0.5 ${darkMode ? "text-slate-500" : "text-slate-400"}`}>
-                  {day.activities.length} activit{day.activities.length === 1 ? "y" : "ies"}
-                </p>
-              )}
-            </div>
-            <div className="flex items-center gap-1 shrink-0">
-              <button
-                type="button"
-                onClick={e => { e.stopPropagation(); deleteDay(i); }}
-                className="p-1 rounded text-slate-400 hover:text-red-500 transition-colors"
-                title="Delete day"
+            {/* Day header row */}
+            <div
+              className={`flex items-center gap-2 px-3 py-2.5 select-none transition-colors ${
+                darkMode ? "hover:bg-slate-700" : "hover:bg-slate-50"
+              }`}
+            >
+              {/* Drag handle */}
+              <div
+                className={`cursor-grab active:cursor-grabbing p-1 -ml-1 rounded transition-colors ${
+                  darkMode ? "text-slate-600 hover:text-slate-400" : "text-slate-300 hover:text-slate-400"
+                }`}
+                title="Drag to reorder"
+                onMouseDown={e => e.stopPropagation()}
               >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-              {expandedIdx === i
-                ? <ChevronUp className="w-4 h-4 text-slate-400" />
-                : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                <GripVertical className="w-4 h-4" />
+              </div>
+
+              <div
+                className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
+                onClick={() => setExpandedIdx(expandedIdx === i ? null : i)}
+              >
+                <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                  {day.day}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-medium truncate ${!day.title ? (darkMode ? "text-slate-500" : "text-slate-400") : ""}`}>
+                    {day.title || `Day ${day.day} — click to edit`}
+                  </p>
+                  {day.activities.length > 0 && (
+                    <p className={`text-xs mt-0.5 ${darkMode ? "text-slate-500" : "text-slate-400"}`}>
+                      {day.activities.length} activit{day.activities.length === 1 ? "y" : "ies"}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={e => { e.stopPropagation(); deleteDay(i); }}
+                  className="p-1 rounded text-slate-400 hover:text-red-500 transition-colors"
+                  title="Delete day"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+                <div
+                  className="cursor-pointer"
+                  onClick={() => setExpandedIdx(expandedIdx === i ? null : i)}
+                >
+                  {expandedIdx === i
+                    ? <ChevronUp className="w-4 h-4 text-slate-400" />
+                    : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                </div>
+              </div>
             </div>
-          </div>
 
           {/* Expanded editor */}
           <AnimatePresence initial={false}>
@@ -221,6 +309,7 @@ function ItineraryBuilder({
               </motion.div>
             )}
           </AnimatePresence>
+          </div>
         </div>
       ))}
 
