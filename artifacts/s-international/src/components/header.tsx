@@ -43,7 +43,7 @@ export function Header() {
           <motion.img
             src="/logo.png"
             alt="S International"
-            className="h-16 w-auto"
+            className="h-20 w-auto"
             animate={{ scale: [1, 1.15, 0.95, 1.08, 1] }}
             transition={{ duration: 0.6, ease: "easeInOut", repeat: Infinity, repeatDelay: 3 }}
             whileHover={{ scale: 1.12, transition: { duration: 0.2 } }}

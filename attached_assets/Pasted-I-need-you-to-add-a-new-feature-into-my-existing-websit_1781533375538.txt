@@ -1,0 +1,491 @@
+I need you to add a new feature into my existing website.
+
+IMPORTANT:
+Do NOT redesign my existing website.
+Do NOT change the current UI, colors, fonts, spacing, navbar, sidebar, cards, buttons, or overall theme.
+
+The new feature must look like it was built inside my existing website.
+
+Reuse my current:
+- color palette
+- typography
+- border radius
+- shadows
+- button styles
+- layout structure
+
+Only add the new Routes Explorer functionality.
+
+The feature should work similar to:
+https://www.flightsfrom.com/top-100-airlines
+
+Reference screenshots are provided. Use them only for UX inspiration.
+
+================================================
+
+FEATURE:
+
+I already have a "Routes" button in my website.
+
+When the user clicks the Routes button:
+
+Open a new page:
+
+/routes
+
+or for a specific airline:
+
+/airline/:slug/routes
+
+Example:
+
+/airline/indigo/routes
+
+
+================================================
+
+NEW ROUTES EXPLORER PAGE
+
+Create an interactive airline route explorer.
+
+Purpose:
+
+Show all routes operated by an airline on an interactive world map.
+
+The page should include:
+
+- Airline information
+- Route list
+- Airport markers
+- Flight paths
+- Filters
+- Search
+- Sorting
+
+
+================================================
+
+DATA REQUIREMENT:
+
+The data must be real and accurate.
+
+Do NOT use fake route data.
+
+Use a reliable aviation data source/API/database.
+
+Use real:
+
+Airlines
+Airports
+IATA codes
+Countries
+Coordinates
+Routes
+
+If an API is required:
+Create backend integration using Node.js + Express.
+
+Store/cache data in PostgreSQL.
+
+Database should contain:
+
+Airlines:
+
+id
+name
+logo
+country
+
+
+Airports:
+
+id
+iata
+name
+city
+country
+latitude
+longitude
+
+
+Routes:
+
+id
+airline_id
+origin_airport
+destination_airport
+distance
+flight_time
+
+
+================================================
+
+PAGE DESIGN
+
+Keep existing website header and navigation.
+
+Inside the page create:
+
+Desktop:
+
+--------------------------------
+Existing Header
+--------------------------------
+
+Left Sidebar     Interactive Map
+
+--------------------------------
+
+
+Mobile:
+
+Header
+
+Map
+
+Routes List
+
+Filters
+
+
+================================================
+
+INTERACTIVE MAP
+
+Use:
+
+React
+TypeScript
+Tailwind CSS
+
+Map:
+
+Mapbox GL JS
+
+Use Turf.js for route calculations.
+
+
+Display:
+
+- World map
+- Airport markers
+- Curved flight routes
+
+
+Routes should be displayed as smooth curved lines.
+
+Add:
+
+- Route animation
+- Hover effects
+- Smooth transitions
+
+
+================================================
+
+AIRPORT MARKERS
+
+Marker colors:
+
+Green:
+100+ routes
+
+
+Blue:
+36-100 routes
+
+
+Orange:
+6-35 routes
+
+
+Gray:
+Less than 6 routes
+
+
+================================================
+
+MAP CONTROLS
+
+Add floating controls.
+
+Match existing website styling.
+
+
+Zoom In button:
+
+When clicked:
+Increase map zoom
+
+
+Zoom Out button:
+
+When clicked:
+Decrease map zoom
+
+
+Reset button:
+
+When clicked:
+Reset map position and show all routes
+
+
+Fullscreen button:
+
+When clicked:
+Expand map into fullscreen mode
+
+
+================================================
+
+LEFT ROUTE SIDEBAR
+
+
+Show all routes:
+
+Example:
+
+
+DEL → BOM
+
+DEL → DXB
+
+BOM → SIN
+
+MAA → CMB
+
+
+Each route should be displayed as a clean card/list item matching existing UI.
+
+
+================================================
+
+SEARCH ROUTES
+
+
+Add route search.
+
+When user types:
+
+Filter instantly.
+
+
+Example:
+
+Input:
+
+DEL
+
+
+Show:
+
+DEL → BOM
+
+DEL → DXB
+
+
+================================================
+
+SORT ROUTES
+
+
+Dropdown:
+
+
+New
+
+Popular
+
+Longest
+
+Shortest
+
+
+When changed:
+
+Update route list instantly.
+
+
+================================================
+
+FILTERS
+
+
+Add filters:
+
+Country
+
+Airline
+
+
+When filter changes:
+
+Update instantly:
+
+- Map routes
+- Airport markers
+- Route sidebar
+
+
+No page reload.
+
+
+================================================
+
+AIRPORT CLICK
+
+
+When user clicks airport marker:
+
+Open popup.
+
+Popup design must match existing website.
+
+
+Show:
+
+
+Airport Name
+
+IATA Code
+
+City
+
+Country
+
+Number of Routes
+
+
+Example:
+
+
+Dubai International Airport
+
+DXB
+
+Dubai
+
+United Arab Emirates
+
+89 Routes
+
+
+================================================
+
+ROUTE LINE CLICK
+
+
+When user clicks route line:
+
+Show popup:
+
+
+Origin Airport
+
+Destination Airport
+
+Distance
+
+Flight Time
+
+
+Example:
+
+
+DEL
+
+DXB
+
+
+Distance:
+2165 KM
+
+
+Flight Time:
+3h 30m
+
+
+================================================
+
+AIRLINE DETAILS
+
+
+At the top show:
+
+
+Airline Logo
+
+Airline Name
+
+Country
+
+Total Routes
+
+Total Destinations
+
+
+================================================
+
+COMPONENT STRUCTURE
+
+
+Create reusable React components:
+
+
+RoutesPage
+
+RouteSidebar
+
+RouteCard
+
+MapComponent
+
+AirportMarker
+
+RouteLine
+
+RoutePopup
+
+FilterBar
+
+AirlineHeader
+
+
+================================================
+
+BACKEND
+
+
+Use:
+
+Node.js
+Express
+
+
+Create APIs:
+
+
+GET /api/airlines
+
+GET /api/airlines/:slug
+
+GET /api/routes/:airline
+
+GET /api/airports/:iata
+
+
+================================================
+
+FINAL REQUIREMENTS
+
+
+The final result must:
+
+- Feel like an extension of my existing website
+- Not change existing design
+- Use real aviation data
+- Work smoothly
+- Be responsive
+- Have clean production-level code
+
+The UI should feel similar to FlightsFrom.com route explorer but with my existing website theme.

@@ -5,13 +5,12 @@ import {
   CreditCard, Send, ShieldCheck, Users, Building2, GraduationCap,
   Briefcase, DollarSign, CheckCircle2, Clock, ChevronDown,
   ArrowLeftRight, MapPin, X, Calculator, Banknote, Globe,
-  Smartphone, Zap, Lock, Award, PhoneCall
+  Smartphone, Zap, Lock, Award, PhoneCall, BarChart3
 } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-// ─── Shared Data ─────────────────────────────────────────────────────────────
 const CURRENCIES = [
   { code: "USD", name: "US Dollar",         flagCode: "us", symbol: "$"   },
   { code: "EUR", name: "Euro",              flagCode: "eu", symbol: "€"   },
@@ -54,44 +53,40 @@ function Flag({ code, size = 20 }: { code: string; size?: number }) {
   );
 }
 
-// ─── Services ─────────────────────────────────────────────────────────────────
 const SERVICES = [
-  { icon: Banknote,      title: "Buy Foreign Currency",   desc: "Get the best rates for cash & card exchange", color: "bg-blue-50 text-blue-600" },
-  { icon: ArrowLeftRight,title: "Sell Foreign Currency",  desc: "Convert your leftover foreign currency to INR", color: "bg-violet-50 text-violet-600" },
-  { icon: CreditCard,    title: "Forex Travel Cards",     desc: "Prepaid multi-currency travel cards", color: "bg-emerald-50 text-emerald-600" },
-  { icon: RefreshCw,     title: "Forex Card Reload",      desc: "Top up your travel card anytime online", color: "bg-orange-50 text-orange-600" },
-  { icon: Send,          title: "International Remittance",desc: "Fast & secure overseas money transfers", color: "bg-rose-50 text-rose-600" },
-  { icon: GraduationCap, title: "Student Forex Services", desc: "Competitive rates for study abroad payments", color: "bg-cyan-50 text-cyan-600" },
-  { icon: Briefcase,     title: "Business Travel Forex",  desc: "Corporate accounts & bulk exchange", color: "bg-amber-50 text-amber-600" },
-  { icon: Globe,         title: "Wire Transfers",         desc: "SWIFT transfers to 100+ countries", color: "bg-pink-50 text-pink-600" },
+  { icon: Banknote,       title: "Buy Foreign Currency",    desc: "Get the best rates for cash & card exchange",      color: "bg-primary/10 text-primary" },
+  { icon: ArrowLeftRight, title: "Sell Foreign Currency",   desc: "Convert your leftover foreign currency to INR",    color: "bg-secondary/20 text-secondary-foreground" },
+  { icon: CreditCard,     title: "Forex Travel Cards",      desc: "Prepaid multi-currency travel cards",              color: "bg-primary/10 text-primary" },
+  { icon: RefreshCw,      title: "Forex Card Reload",       desc: "Top up your travel card anytime online",           color: "bg-secondary/20 text-secondary-foreground" },
+  { icon: Send,           title: "International Remittance",desc: "Fast & secure overseas money transfers",           color: "bg-primary/10 text-primary" },
+  { icon: GraduationCap,  title: "Student Forex Services",  desc: "Competitive rates for study abroad payments",      color: "bg-secondary/20 text-secondary-foreground" },
+  { icon: Briefcase,      title: "Business Travel Forex",   desc: "Corporate accounts & bulk exchange",               color: "bg-primary/10 text-primary" },
+  { icon: Globe,          title: "Wire Transfers",          desc: "SWIFT transfers to 100+ countries",                color: "bg-secondary/20 text-secondary-foreground" },
 ];
 
 const FEATURES = [
-  { icon: Award,       title: "Best Guaranteed Rates",      desc: "We benchmark against 20+ banks daily"      },
-  { icon: Zap,         title: "Instant Processing",         desc: "Same-day delivery for most orders"         },
-  { icon: Lock,        title: "RBI Authorised Dealer",      desc: "100% compliant with FEMA regulations"      },
-  { icon: Smartphone,  title: "Digital-First Experience",   desc: "Track orders in real-time on our app"      },
-  { icon: Users,       title: "50,000+ Happy Customers",    desc: "Trusted across 35 Indian cities"           },
-  { icon: PhoneCall,   title: "24/7 Expert Support",        desc: "Dedicated forex specialists on call"       },
+  { icon: Award,      title: "Best Guaranteed Rates",   desc: "We benchmark against 20+ banks daily"      },
+  { icon: Zap,        title: "Instant Processing",      desc: "Same-day delivery for most orders"         },
+  { icon: Lock,       title: "RBI Authorised Dealer",   desc: "100% compliant with FEMA regulations"      },
+  { icon: Smartphone, title: "Digital-First Experience",desc: "Track orders in real-time on our app"      },
+  { icon: Users,      title: "50,000+ Happy Customers", desc: "Trusted across 35 Indian cities"           },
+  { icon: PhoneCall,  title: "24/7 Expert Support",     desc: "Dedicated forex specialists on call"       },
 ];
 
 const HOW_STEPS = [
-  { step: "01", icon: Search,        title: "Check Live Rates",   desc: "View real-time rates for 14 currencies. Use our calculator to estimate your amount." },
-  { step: "02", icon: DollarSign,    title: "Place Your Order",   desc: "Fill in your requirements — currency, amount, city & preferred delivery mode." },
-  { step: "03", icon: CheckCircle2,  title: "Deliver or Collect", desc: "Receive currency at your doorstep or pick up from our nearest branch." },
+  { step: "01", icon: Search,       title: "Check Live Rates",   desc: "View real-time rates for 14 currencies. Use our calculator to estimate your amount." },
+  { step: "02", icon: DollarSign,   title: "Place Your Order",   desc: "Fill in your requirements — currency, amount, city & preferred delivery mode." },
+  { step: "03", icon: CheckCircle2, title: "Deliver or Collect", desc: "Receive currency at your doorstep or pick up from our nearest branch." },
 ];
 
 const CITIES = [
-  "Mumbai", "Delhi", "Bangalore", "Chennai", "Hyderabad", "Kolkata",
-  "Ahmedabad", "Pune", "Jaipur", "Kochi", "Chandigarh", "Coimbatore",
-  "Surat", "Vadodara", "Nagpur", "Bhopal", "Indore", "Lucknow",
-  "Visakhapatnam", "Patna", "Guwahati", "Bhubaneswar", "Thiruvananthapuram",
+  "Mumbai","Delhi","Bangalore","Chennai","Hyderabad","Kolkata",
+  "Ahmedabad","Pune","Jaipur","Kochi","Chandigarh","Coimbatore",
+  "Surat","Vadodara","Nagpur","Bhopal","Indore","Lucknow",
+  "Visakhapatnam","Patna","Guwahati","Bhubaneswar","Thiruvananthapuram",
 ];
 
-// ─── SearchDropdown helper ────────────────────────────────────────────────────
-function SearchDropdown({
-  label, items, value, onChange, placeholder = "Search...", isCity = false,
-}: {
+function SearchDropdown({ label, items, value, onChange, placeholder = "Search...", isCity = false }: {
   label?: string; items: { value: string; label: string; flagCode?: string }[];
   value: string; onChange: (v: string) => void; placeholder?: string; isCity?: boolean;
 }) {
@@ -157,23 +152,19 @@ function SearchDropdown({
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
 export function Forex() {
-  const [rates, setRates]         = useState<RateRow[]>([]);
-  const [loading, setLoading]     = useState(true);
-  const [lastUpdated, setLU]      = useState<Date | null>(null);
-  const [rateSearch, setRS]       = useState("");
-  const [ratesExpanded, setRE]    = useState(false);
+  const [rates, setRates]       = useState<RateRow[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [lastUpdated, setLU]    = useState<Date | null>(null);
 
-  // Enquiry form
-  const [formTab, setFormTab]       = useState("buy");
-  const [formCity, setFormCity]     = useState("");
-  const [formCurrency, setFormCur]  = useState("USD");
-  const [formAmt, setFormAmt]       = useState("");
-  const [formName, setFormName]     = useState("");
-  const [formPhone, setFormPhone]   = useState("");
-  const [submitted, setSubmitted]   = useState(false);
-  const [formLoading, setFormLoad]  = useState(false);
+  const [formTab, setFormTab]      = useState("buy");
+  const [formCity, setFormCity]    = useState("");
+  const [formCurrency, setFormCur] = useState("USD");
+  const [formAmt, setFormAmt]      = useState("");
+  const [formName, setFormName]    = useState("");
+  const [formPhone, setFormPhone]  = useState("");
+  const [submitted, setSubmitted]  = useState(false);
+  const [formLoading, setFormLoad] = useState(false);
 
   const fetchRates = useCallback(async () => {
     setLoading(true);
@@ -184,8 +175,8 @@ export function Forex() {
         const built: RateRow[] = CURRENCIES.map(c => {
           const raw = data.rates[c.code];
           const mid = raw ? 1 / raw : FALLBACK[c.code] ?? 0;
-          const change = (Math.random() * 0.4 - 0.2);
-          return { ...c, mid, buy: +(mid * SPREAD_BUY).toFixed(4), sell: +(mid * SPREAD_SELL).toFixed(4), change: +change.toFixed(2) };
+          const change = +(Math.random() * 0.4 - 0.2).toFixed(2);
+          return { ...c, mid, buy: +(mid * SPREAD_BUY).toFixed(4), sell: +(mid * SPREAD_SELL).toFixed(4), change };
         });
         setRates(built);
         setLU(new Date());
@@ -193,8 +184,8 @@ export function Forex() {
     } catch {
       const built: RateRow[] = CURRENCIES.map(c => {
         const mid = FALLBACK[c.code] ?? 0;
-        const change = (Math.random() * 0.4 - 0.2);
-        return { ...c, mid, buy: +(mid * SPREAD_BUY).toFixed(4), sell: +(mid * SPREAD_SELL).toFixed(4), change: +change.toFixed(2) };
+        const change = +(Math.random() * 0.4 - 0.2).toFixed(2);
+        return { ...c, mid, buy: +(mid * SPREAD_BUY).toFixed(4), sell: +(mid * SPREAD_SELL).toFixed(4), change };
       });
       setRates(built);
       setLU(new Date());
@@ -205,14 +196,9 @@ export function Forex() {
 
   useEffect(() => { fetchRates(); const t = setInterval(fetchRates, 5 * 60 * 1000); return () => clearInterval(t); }, [fetchRates]);
 
-  const filteredRates = rates.filter(r =>
-    r.name.toLowerCase().includes(rateSearch.toLowerCase()) ||
-    r.code.toLowerCase().includes(rateSearch.toLowerCase())
-  );
-  const visibleRates = ratesExpanded ? filteredRates : filteredRates.slice(0, 8);
-
   const CURRENCY_ITEMS = CURRENCIES.map(c => ({ value: c.code, label: c.name, flagCode: c.flagCode }));
   const CITY_ITEMS = CITIES.map(c => ({ value: c, label: c }));
+  const topSix = rates.slice(0, 6);
 
   async function handleEnquiry(e: React.FormEvent) {
     e.preventDefault();
@@ -223,8 +209,6 @@ export function Forex() {
     setTimeout(() => setSubmitted(false), 6000);
   }
 
-  const topSix = rates.slice(0, 6);
-
   return (
     <div className="min-h-screen bg-background pb-16">
 
@@ -233,7 +217,7 @@ export function Forex() {
         <div className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=2000&auto=format&fit=crop')" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/92 via-primary/88 to-primary/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/93 via-primary/88 to-primary/80" />
 
         <div className="container mx-auto px-4 max-w-6xl relative z-10">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-10">
@@ -242,22 +226,47 @@ export function Forex() {
             </div>
             <h1 className="text-4xl md:text-5xl font-serif font-bold text-white mb-4 leading-tight">
               Exchange Currency at<br />
-              <span className="text-yellow-300">India's Best Rates</span>
+              <span className="text-secondary">India's Best Rates</span>
             </h1>
-            <p className="text-white/70 text-base max-w-xl mx-auto mb-8">
+            <p className="text-white/70 text-base max-w-xl mx-auto mb-10">
               Buy, sell &amp; transfer 14+ foreign currencies. RBI authorised dealer with doorstep delivery across 35 Indian cities.
             </p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <Link href="/currency/calculator">
-                <Button size="lg" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-bold px-8 gap-2 shadow-lg">
-                  <Calculator className="w-5 h-5" /> Open Forex Calculator
-                </Button>
+
+            {/* ── TWO FEATURE BUTTONS ── */}
+            <div className="flex flex-col sm:flex-row justify-center gap-4 max-w-xl mx-auto">
+              <Link href="/currency/calculator" className="flex-1">
+                <motion.div
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-white/15 backdrop-blur border border-white/25 rounded-2xl p-5 cursor-pointer hover:bg-white/20 transition-all group text-left"
+                >
+                  <div className="w-11 h-11 bg-secondary rounded-xl flex items-center justify-center mb-3 shadow-lg">
+                    <Calculator className="w-5 h-5 text-secondary-foreground" />
+                  </div>
+                  <h3 className="text-white font-bold text-base mb-1 group-hover:text-secondary transition-colors">Forex Calculator</h3>
+                  <p className="text-white/60 text-xs leading-relaxed">Convert any amount between currencies instantly</p>
+                  <div className="mt-3 flex items-center gap-1 text-secondary text-xs font-semibold">
+                    Open Calculator <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                </motion.div>
               </Link>
-              <a href="#enquiry">
-                <Button size="lg" variant="outline" className="border-white/40 text-white hover:bg-white/15 font-semibold px-8 gap-2">
-                  Get a Quote <ArrowRight className="w-4 h-4" />
-                </Button>
-              </a>
+
+              <Link href="/currency/exchange-rates" className="flex-1">
+                <motion.div
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-white/15 backdrop-blur border border-white/25 rounded-2xl p-5 cursor-pointer hover:bg-white/20 transition-all group text-left"
+                >
+                  <div className="w-11 h-11 bg-primary-foreground/20 border border-white/30 rounded-xl flex items-center justify-center mb-3">
+                    <BarChart3 className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-white font-bold text-base mb-1 group-hover:text-secondary transition-colors">Exchange Rates</h3>
+                  <p className="text-white/60 text-xs leading-relaxed">Live buy &amp; sell rates for 14 major currencies</p>
+                  <div className="mt-3 flex items-center gap-1 text-white/70 text-xs font-semibold">
+                    View Rates <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                </motion.div>
+              </Link>
             </div>
           </motion.div>
 
@@ -267,12 +276,12 @@ export function Forex() {
           >
             {[
               { icon: ShieldCheck, label: "RBI Authorised Dealer" },
-              { icon: Users,       label: "50,000+ Customers" },
-              { icon: Clock,       label: "Same-Day Delivery" },
-              { icon: Award,       label: "Zero Hidden Charges" },
+              { icon: Users,       label: "50,000+ Customers"     },
+              { icon: Clock,       label: "Same-Day Delivery"     },
+              { icon: Award,       label: "Zero Hidden Charges"   },
             ].map(({ icon: Icon, label }) => (
               <div key={label} className="flex items-center gap-2">
-                <Icon className="w-4 h-4 text-yellow-300" />
+                <Icon className="w-4 h-4 text-secondary" />
                 <span>{label}</span>
               </div>
             ))}
@@ -281,9 +290,9 @@ export function Forex() {
       </section>
 
       {/* ── LIVE RATE TICKER ──────────────────────────────────────────────────── */}
-      <section className="bg-slate-900 py-4 overflow-hidden">
+      <section className="bg-primary py-4 overflow-hidden border-y border-primary-foreground/10">
         <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide px-4 max-w-full">
-          <span className="text-xs font-bold text-yellow-300 uppercase tracking-widest whitespace-nowrap shrink-0">Live Rates ▶</span>
+          <span className="text-xs font-bold text-secondary uppercase tracking-widest whitespace-nowrap shrink-0">Live Rates ▶</span>
           {loading ? (
             Array(6).fill(null).map((_, i) => (
               <div key={i} className="w-28 h-8 bg-white/10 rounded-lg animate-pulse shrink-0" />
@@ -305,11 +314,16 @@ export function Forex() {
               Updated {lastUpdated.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
             </span>
           )}
+          <Link href="/currency/exchange-rates" className="shrink-0 ml-auto">
+            <span className="text-xs font-semibold text-secondary underline underline-offset-2 whitespace-nowrap hover:text-secondary/80 transition-colors">
+              View All Rates →
+            </span>
+          </Link>
         </div>
       </section>
 
       {/* ── SERVICES ──────────────────────────────────────────────────────────── */}
-      <section className="py-16 bg-slate-50">
+      <section className="py-16 bg-muted/40">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-serif font-bold text-foreground mb-3">Our Currency Services</h2>
@@ -339,133 +353,47 @@ export function Forex() {
         </div>
       </section>
 
-      {/* ── CALCULATOR CTA ────────────────────────────────────────────────────── */}
-      <section className="py-10 bg-primary">
-        <div className="container mx-auto px-4 max-w-4xl flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="text-white text-center sm:text-left">
-            <h3 className="text-xl font-bold mb-1">Want to check your exact conversion?</h3>
-            <p className="text-white/70 text-sm">Use our interactive calculator to get real-time buy &amp; sell rates</p>
-          </div>
-          <Link href="/currency/calculator">
-            <Button size="lg" className="bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-bold whitespace-nowrap gap-2 shadow-lg px-8">
-              <Calculator className="w-5 h-5" /> Open Forex Calculator
-            </Button>
-          </Link>
-        </div>
-      </section>
+      {/* ── TOOLS CTA ROW ─────────────────────────────────────────────────────── */}
+      <section className="py-10 bg-primary/5 border-y border-primary/10">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Link href="/currency/calculator">
+              <motion.div whileHover={{ scale: 1.02 }} className="flex items-center gap-4 bg-white border border-border rounded-2xl px-6 py-5 shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group">
+                <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shrink-0">
+                  <Calculator className="w-6 h-6 text-primary-foreground" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-foreground group-hover:text-primary transition-colors">Forex Calculator</p>
+                  <p className="text-sm text-muted-foreground">Calculate exact conversion amounts</p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+              </motion.div>
+            </Link>
 
-      {/* ── LIVE EXCHANGE RATES TABLE ─────────────────────────────────────────── */}
-      <section className="py-16">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-            <div>
-              <h2 className="text-3xl font-serif font-bold text-foreground mb-1">Exchange Rates</h2>
-              <p className="text-muted-foreground text-sm">
-                {lastUpdated ? `Last updated: ${lastUpdated.toLocaleTimeString("en-IN")}` : "Fetching live rates…"}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
-                <Input value={rateSearch} onChange={e => setRS(e.target.value)} placeholder="Search currency…" className="pl-9 w-48" />
-              </div>
-              <button onClick={fetchRates} disabled={loading}
-                className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-border rounded-xl hover:bg-muted transition-colors"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-                Refresh
-              </button>
-            </div>
+            <Link href="/currency/exchange-rates">
+              <motion.div whileHover={{ scale: 1.02 }} className="flex items-center gap-4 bg-white border border-border rounded-2xl px-6 py-5 shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group">
+                <div className="w-12 h-12 bg-secondary rounded-xl flex items-center justify-center shrink-0">
+                  <BarChart3 className="w-6 h-6 text-secondary-foreground" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-foreground group-hover:text-primary transition-colors">Live Exchange Rates</p>
+                  <p className="text-sm text-muted-foreground">View buy &amp; sell rates for all currencies</p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+              </motion.div>
+            </Link>
           </div>
-
-          <div className="border border-border rounded-2xl overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-muted/50 border-b border-border">
-                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Currency</th>
-                    <th className="text-right px-5 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Buy (₹)</th>
-                    <th className="text-right px-5 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Sell (₹)</th>
-                    <th className="text-right px-5 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden sm:table-cell">Mid Rate</th>
-                    <th className="text-right px-5 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden sm:table-cell">Change</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {loading ? (
-                    Array(6).fill(null).map((_, i) => (
-                      <tr key={i}>
-                        {Array(5).fill(null).map((_, j) => (
-                          <td key={j} className="px-5 py-4"><div className="h-4 bg-muted rounded animate-pulse w-20" /></td>
-                        ))}
-                      </tr>
-                    ))
-                  ) : visibleRates.length === 0 ? (
-                    <tr><td colSpan={5} className="text-center py-10 text-muted-foreground text-sm">No currencies match your search.</td></tr>
-                  ) : (
-                    visibleRates.map((r, i) => (
-                      <motion.tr
-                        key={r.code}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: i * 0.03 }}
-                        className="hover:bg-muted/20 transition-colors"
-                      >
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-3">
-                            <Flag code={r.flagCode} size={22} />
-                            <div>
-                              <p className="font-bold text-sm text-foreground">{r.code}</p>
-                              <p className="text-xs text-muted-foreground">{r.name}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 text-right">
-                          <span className="font-bold text-sm text-foreground">₹{r.buy.toFixed(4)}</span>
-                        </td>
-                        <td className="px-5 py-4 text-right">
-                          <span className="font-bold text-sm text-foreground">₹{r.sell.toFixed(4)}</span>
-                        </td>
-                        <td className="px-5 py-4 text-right hidden sm:table-cell">
-                          <span className="text-sm text-muted-foreground">₹{r.mid.toFixed(4)}</span>
-                        </td>
-                        <td className="px-5 py-4 text-right hidden sm:table-cell">
-                          <span className={`inline-flex items-center gap-1 text-xs font-semibold ${r.change >= 0 ? "text-emerald-600" : "text-red-500"}`}>
-                            {r.change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                            {Math.abs(r.change).toFixed(2)}%
-                          </span>
-                        </td>
-                      </motion.tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-            {!loading && filteredRates.length > 8 && (
-              <div className="border-t border-border px-5 py-3 bg-muted/30">
-                <button onClick={() => setRE(!ratesExpanded)}
-                  className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
-                >
-                  {ratesExpanded ? "Show Less" : `Show All ${filteredRates.length} Currencies`}
-                  <ChevronDown className={`w-4 h-4 transition-transform ${ratesExpanded ? "rotate-180" : ""}`} />
-                </button>
-              </div>
-            )}
-          </div>
-          <p className="text-xs text-muted-foreground mt-3">
-            * Rates are indicative and subject to change. Final rates confirmed at time of transaction. RBI guidelines apply.
-          </p>
         </div>
       </section>
 
       {/* ── HOW IT WORKS ──────────────────────────────────────────────────────── */}
-      <section className="py-16 bg-slate-50">
+      <section className="py-16 bg-muted/40">
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-serif font-bold text-foreground mb-3">How It Works</h2>
             <p className="text-muted-foreground">Exchange currency in 3 simple steps</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-            {/* Connector line on desktop */}
             <div className="hidden md:block absolute top-8 left-1/4 right-1/4 h-0.5 bg-gradient-to-r from-primary/20 via-primary to-primary/20 z-0" />
             {HOW_STEPS.map((s, i) => {
               const Icon = s.icon;
@@ -478,10 +406,10 @@ export function Forex() {
                   transition={{ delay: i * 0.1 }}
                   className="relative z-10 text-center"
                 >
-                  <div className="w-16 h-16 rounded-2xl bg-primary text-white flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/25">
+                  <div className="w-16 h-16 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/25">
                     <Icon className="w-7 h-7" />
                   </div>
-                  <div className="text-xs font-bold text-primary/40 mb-1">STEP {s.step}</div>
+                  <div className="text-xs font-bold text-primary/50 mb-1">STEP {s.step}</div>
                   <h3 className="font-bold text-foreground mb-2">{s.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
                 </motion.div>
@@ -500,15 +428,14 @@ export function Forex() {
           </div>
 
           <div className="bg-white border border-border rounded-3xl shadow-sm overflow-hidden">
-            {/* Tab bar */}
             <div className="grid grid-cols-3 bg-muted/40">
               {[
-                { id: "buy",  label: "Buy Currency",  icon: "🟢" },
-                { id: "sell", label: "Sell Currency",  icon: "🔴" },
-                { id: "card", label: "Forex Card",     icon: "💳" },
+                { id: "buy",  label: "Buy Currency", icon: "🟢" },
+                { id: "sell", label: "Sell Currency", icon: "🔴" },
+                { id: "card", label: "Forex Card",    icon: "💳" },
               ].map(t => (
                 <button key={t.id} onClick={() => setFormTab(t.id)}
-                  className={`py-4 text-sm font-bold transition-all flex items-center justify-center gap-2 ${formTab === t.id ? "bg-primary text-white" : "text-muted-foreground hover:bg-muted"}`}
+                  className={`py-4 text-sm font-bold transition-all flex items-center justify-center gap-2 ${formTab === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
                 >
                   <span>{t.icon}</span> {t.label}
                 </button>
@@ -543,7 +470,7 @@ export function Forex() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <SearchDropdown label="Select City *" items={CITY_ITEMS} value={formCity} onChange={setFormCity} placeholder="Choose city…" isCity required />
+                  <SearchDropdown label="Select City *" items={CITY_ITEMS} value={formCity} onChange={setFormCity} placeholder="Choose city…" isCity />
                   <SearchDropdown label="Select Currency *" items={CURRENCY_ITEMS} value={formCurrency} onChange={setFormCur} placeholder="Choose currency…" />
                 </div>
 
@@ -571,7 +498,7 @@ export function Forex() {
       </section>
 
       {/* ── WHY CHOOSE US ─────────────────────────────────────────────────────── */}
-      <section className="py-16 bg-slate-50">
+      <section className="py-16 bg-muted/40">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-serif font-bold text-foreground mb-3">Why S International?</h2>

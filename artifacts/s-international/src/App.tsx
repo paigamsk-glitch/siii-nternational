@@ -37,6 +37,7 @@ import { VisaDetail } from "@/pages/visa-detail";
 import { VisaStatus } from "@/pages/visa-status";
 import { Forex } from "@/pages/forex";
 import { ForexCalculator } from "@/pages/forex-calculator";
+import { ForexExchangeRates } from "@/pages/forex-exchange-rates";
 
 const queryClient = new QueryClient();
 
@@ -80,6 +81,7 @@ function Router() {
             <Route path="/visa/:countryCode" component={VisaDetail} />
             <Route path="/forex" component={Forex} />
             <Route path="/currency/calculator" component={ForexCalculator} />
+            <Route path="/currency/exchange-rates" component={ForexExchangeRates} />
             <Route path="/currency" component={Forex} />
             <Route component={NotFound} />
           </Switch>
