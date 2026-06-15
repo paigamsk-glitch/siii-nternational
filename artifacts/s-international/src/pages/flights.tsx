@@ -5,8 +5,9 @@ import { format, parseISO } from "date-fns";
 import {
   Plane, Clock, Briefcase, Utensils, Wifi, Luggage,
   Calendar as CalendarIcon, ArrowRight, ArrowLeftRight,
-  Sparkles
+  Sparkles, Map
 } from "lucide-react";
+import { Link } from "wouter";
 import {
   useSearchFlights,
   getSearchFlightsQueryKey,
@@ -117,9 +118,17 @@ export function Flights() {
         }} />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
         <div className="container mx-auto px-4 relative z-10">
-          <div className="flex items-center gap-3 mb-2">
-            <Plane className="w-6 h-6 text-secondary" />
-            <span className="text-secondary text-sm font-semibold tracking-widest uppercase">Flight Search</span>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <Plane className="w-6 h-6 text-secondary" />
+              <span className="text-secondary text-sm font-semibold tracking-widest uppercase">Flight Search</span>
+            </div>
+            <Link href="/airlines">
+              <button className="flex items-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur border border-white/30 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all">
+                <Map className="w-4 h-4" />
+                Explore Airlines &amp; Routes
+              </button>
+            </Link>
           </div>
           <h1 className="text-4xl font-serif font-bold mb-8">Find the Best Fares</h1>
 

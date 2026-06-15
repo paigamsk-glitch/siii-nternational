@@ -299,36 +299,35 @@ export function AirlineRoutes() {
             {filteredRoutes.length === 0 ? (
               <div className="text-center py-10 text-muted-foreground text-sm">No routes match your search.</div>
             ) : (
-              filteredRoutes.map((route, i) => (
-                <motion.div
-                  key={`${route.origin}-${route.destination}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: Math.min(i * 0.02, 0.4) }}
-                  onClick={() => setSelectedRoute(
-                    selectedRoute?.origin === route.origin && selectedRoute?.destination === route.destination
-                      ? null : { origin: route.origin, destination: route.destination }
-                  )}
-                  className={`px-3 py-2.5 border-b border-border cursor-pointer hover:bg-primary/5 transition-colors ${
-                    selectedRoute?.origin === route.origin && selectedRoute?.destination === route.destination
-                      ? "bg-primary/10 border-l-2 border-l-primary"
-                      : ""
-                  }`}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span>{COUNTRY_FLAGS[route.originAirport.country] || "🌐"}</span>
-                    <span className="font-bold text-xs text-foreground">{route.origin}</span>
-                    <span className="font-bold text-xs text-muted-foreground">{route.originAirport.city}</span>
-                    <Plane className="w-3 h-3 text-primary mx-0.5 shrink-0" />
-                    <span className="font-bold text-xs text-foreground">{route.destination}</span>
-                    <span>{COUNTRY_FLAGS[route.destAirport.country] || "🌐"}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground pl-5">
-                    <span className="flex items-center gap-0.5"><Ruler className="w-3 h-3" /> {route.distance.toLocaleString()} km</span>
-                    <span className="flex items-center gap-0.5"><Clock className="w-3 h-3" /> {route.flightTime}</span>
-                  </div>
-                </motion.div>
-              ))
+              filteredRoutes.map((route, i) => {
+                const isActive = selectedRoute?.origin === route.origin && selectedRoute?.destination === route.destination;
+                return (
+                  <motion.div
+                    key={`${route.origin}-${route.destination}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: Math.min(i * 0.02, 0.4) }}
+                    onClick={() => setSelectedRoute(isActive ? null : { origin: route.origin, destination: route.destination })}
+                    className={`px-3 py-2.5 border-b border-border cursor-pointer hover:bg-primary/5 transition-colors ${isActive ? "bg-primary/10 border-l-2 border-l-primary" : ""}`}
+                  >
+                    {/* flightsfrom.com style: flag IATA City ↔ City IATA flag */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-base leading-none">{COUNTRY_FLAGS[route.originAirport.country] || "🌐"}</span>
+                      <span className="font-bold text-xs text-primary font-mono">{route.origin}</span>
+                      <span className="text-xs text-foreground font-medium">{route.originAirport.city}</span>
+                      <ArrowRight className="w-3 h-3 text-muted-foreground shrink-0" />
+                      <span className="text-xs text-foreground font-medium">{route.destAirport.city}</span>
+                      <span className="font-bold text-xs text-primary font-mono">{route.destination}</span>
+                      <span className="text-base leading-none">{COUNTRY_FLAGS[route.destAirport.country] || "🌐"}</span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="text-xs text-emerald-600 font-medium">↻ Is operating</span>
+                      <span className="flex items-center gap-0.5 text-xs text-muted-foreground"><Clock className="w-2.5 h-2.5" /> {route.flightTime}</span>
+                      <span className="flex items-center gap-0.5 text-xs text-muted-foreground"><Ruler className="w-2.5 h-2.5" /> {route.distance.toLocaleString()} km</span>
+                    </div>
+                  </motion.div>
+                );
+              })
             )}
           </div>
 
