@@ -38,6 +38,8 @@ import { VisaStatus } from "@/pages/visa-status";
 import { Forex } from "@/pages/forex";
 import { ForexCalculator } from "@/pages/forex-calculator";
 import { ForexExchangeRates } from "@/pages/forex-exchange-rates";
+import { Airlines } from "@/pages/airlines";
+import { AirlineRoutes } from "@/pages/airline-routes";
 
 const queryClient = new QueryClient();
 
@@ -79,6 +81,8 @@ function Router() {
             <Route path="/visa" component={Visa} />
             <Route path="/visa/status" component={VisaStatus} />
             <Route path="/visa/:countryCode" component={VisaDetail} />
+            <Route path="/airlines" component={Airlines} />
+            <Route path="/airline/:slug/routes" component={AirlineRoutes} />
             <Route path="/forex" component={Forex} />
             <Route path="/currency/calculator" component={ForexCalculator} />
             <Route path="/currency/exchange-rates" component={ForexExchangeRates} />

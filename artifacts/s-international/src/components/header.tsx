@@ -28,6 +28,7 @@ export function Header() {
 
   const navItems = [
     { label: "Flights", path: "/flights", icon: Plane },
+    { label: "Airlines", path: "/airlines", icon: Plane },
     { label: "Train", path: "/trains", icon: Train },
     { label: "Hotels", path: "/hotels", icon: Building2 },
     { label: "Packages", path: "/packages", icon: Package },
