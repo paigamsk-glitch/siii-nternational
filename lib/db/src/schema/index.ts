@@ -7,3 +7,4 @@ export * from "./hotels_admin";
 export * from "./destinations_admin";
 export * from "./cms_content";
 export * from "./reviews";
+export * from "./trains";

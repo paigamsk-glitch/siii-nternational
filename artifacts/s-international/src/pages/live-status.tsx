@@ -3,16 +3,47 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Train, Search, MapPin, Clock, AlertCircle, CheckCircle2,
   Radio, RefreshCw, ChevronRight, Zap, ArrowRight,
-  Navigation, Timer, Calendar,
+  Navigation, Timer, Calendar, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-  getTrainLiveStatus, getLiveStatusTrains,
+  getLiveStatusTrains,
   type TrainLiveStatusResult, type LiveStopResult,
 } from "@/lib/trainApi";
 import { cn } from "@/lib/utils";
+
+const BASE_URL = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+async function fetchTrainLiveStatus(trainNumber: string): Promise<TrainLiveStatusResult | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/trains/live-status/${trainNumber.trim()}`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (!json.success) return null;
+    return json.data as TrainLiveStatusResult;
+  } catch {
+    return null;
+  }
+}
+
+async function searchTrainsAPI(q: string): Promise<{ number: string; name: string; from: string; to: string }[]> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/trains/search?q=${encodeURIComponent(q)}`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    if (!json.success) return [];
+    return json.data.map((t: any) => ({
+      number: t.trainNumber,
+      name: t.trainName,
+      from: t.fromStation,
+      to: t.toStation,
+    }));
+  } catch {
+    return [];
+  }
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function DelayBadge({ mins }: { mins: number }) {
@@ -157,28 +188,47 @@ export function LiveTrainStatus() {
   const [trainNumber, setTrainNumber] = useState("");
   const [result, setResult] = useState<TrainLiveStatusResult | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [apiSuggestions, setApiSuggestions] = useState<{ number: string; name: string; from: string; to: string }[]>([]);
 
   const popular = getLiveStatusTrains();
 
-  const suggestions = query.length >= 2
-    ? popular.filter(
-        (t) =>
-          t.number.includes(query) ||
-          t.name.toLowerCase().includes(query.toLowerCase()) ||
-          t.from.toLowerCase().includes(query.toLowerCase()) ||
-          t.to.toLowerCase().includes(query.toLowerCase()),
-      )
-    : popular;
+  // For suggestions: use API results if we have them, else filter local list
+  const suggestions = apiSuggestions.length > 0
+    ? apiSuggestions
+    : query.length >= 2
+      ? popular.filter(
+          (t) =>
+            t.number.includes(query) ||
+            t.name.toLowerCase().includes(query.toLowerCase()) ||
+            t.from.toLowerCase().includes(query.toLowerCase()) ||
+            t.to.toLowerCase().includes(query.toLowerCase()),
+        )
+      : popular;
 
-  function search(num: string) {
+  // Debounced API search for suggestions
+  useEffect(() => {
+    if (query.length < 2) { setApiSuggestions([]); return; }
+    const timer = setTimeout(async () => {
+      const results = await searchTrainsAPI(query);
+      setApiSuggestions(results);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  async function search(num: string) {
     const n = num.trim();
     if (!n) return;
     setTrainNumber(n);
     setQuery(n);
     setShowSuggestions(false);
-    const r = getTrainLiveStatus(n);
+    setIsLoading(true);
+    setResult(null);
+    setNotFound(false);
+    const r = await fetchTrainLiveStatus(n);
+    setIsLoading(false);
     if (r) {
       setResult(r);
       setNotFound(false);
@@ -304,8 +354,21 @@ export function LiveTrainStatus() {
 
       <div className="container mx-auto px-4 max-w-4xl -mt-10 relative z-10">
 
+        {/* ── Loading ─────────────────────────────────────────────────── */}
+        {isLoading && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-card border border-border rounded-2xl p-10 text-center shadow-lg"
+          >
+            <Loader2 className="w-10 h-10 text-primary mx-auto mb-3 animate-spin" />
+            <div className="font-bold text-lg mb-1">Fetching Live Status…</div>
+            <p className="text-muted-foreground text-sm">Checking train #{trainNumber} position</p>
+          </motion.div>
+        )}
+
         {/* ── Not found ──────────────────────────────────────────────── */}
-        {notFound && (
+        {notFound && !isLoading && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -314,8 +377,8 @@ export function LiveTrainStatus() {
             <AlertCircle className="w-10 h-10 text-destructive mx-auto mb-3" />
             <div className="font-bold text-lg mb-1">Train #{trainNumber} Not Found</div>
             <p className="text-muted-foreground text-sm">
-              Live tracking is available for trains 12951, 12952, 12301, 12621, 12009, 12007,
-              12759, 12015, 12029, 12627, 10111. Please try one of these.
+              This train number is not in our database. Try searching by train name, route, or
+              use one of the quick picks above.
             </p>
           </motion.div>
         )}
