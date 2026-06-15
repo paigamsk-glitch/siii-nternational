@@ -299,64 +299,136 @@ export function PackageDetail() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="space-y-3"
                   >
                     {pkg.itinerary.length === 0 ? (
-                      <p className="text-muted-foreground text-sm">Detailed itinerary coming soon.</p>
-                    ) : pkg.itinerary.map((day, i) => (
-                      <div
-                        key={day.day}
-                        className="border border-border rounded-xl overflow-hidden"
-                      >
-                        <button
-                          className="w-full flex items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors"
-                          onClick={() => setOpenDay(openDay === i ? null : i)}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0">
-                              {day.day}
-                            </div>
-                            <div>
-                              <div className="text-xs text-muted-foreground font-medium mb-0.5">Day {day.day}</div>
-                              <div className="font-semibold text-foreground">{day.title}</div>
-                            </div>
-                          </div>
-                          {openDay === i
-                            ? <ChevronUp className="w-5 h-5 text-muted-foreground shrink-0" />
-                            : <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0" />
-                          }
-                        </button>
-
-                        <AnimatePresence initial={false}>
-                          {openDay === i && (
-                            <motion.div
-                              key="content"
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.25 }}
-                              className="overflow-hidden"
-                            >
-                              <div className="px-5 pb-5 border-t border-border">
-                                <p className="text-muted-foreground text-sm mt-4 mb-4 leading-relaxed">
-                                  {day.description}
-                                </p>
-                                {day.activities.length > 0 && (
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    {day.activities.map((act, idx) => (
-                                      <div key={idx} className="flex items-center gap-2 text-sm">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-secondary shrink-0" />
-                                        {act}
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                      <div className="text-center py-12 text-muted-foreground">
+                        <Calendar className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                        <p className="text-sm">Detailed itinerary coming soon.</p>
                       </div>
-                    ))}
+                    ) : (
+                      <>
+                        {/* Day quick-nav strip */}
+                        <div className="flex gap-2 overflow-x-auto pb-3 mb-5 scrollbar-hide">
+                          {pkg.itinerary.map((day, i) => (
+                            <button
+                              key={i}
+                              onClick={() => setOpenDay(openDay === i ? null : i)}
+                              className={cn(
+                                "shrink-0 flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl border text-xs font-semibold transition-all",
+                                openDay === i
+                                  ? "bg-primary text-primary-foreground border-primary shadow-md scale-[1.04]"
+                                  : "bg-muted/40 text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
+                              )}
+                            >
+                              <span className="text-[10px] opacity-70">Day</span>
+                              <span className="text-base leading-none">{day.day}</span>
+                            </button>
+                          ))}
+                          <div className="ml-auto shrink-0 flex items-center">
+                            <button
+                              onClick={() => setOpenDay(openDay !== null ? null : 0)}
+                              className="text-xs text-primary hover:underline font-medium whitespace-nowrap"
+                            >
+                              {openDay !== null ? "Collapse" : "Expand all"}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Timeline */}
+                        <div className="relative">
+                          {/* Vertical connector line */}
+                          <div className="absolute left-[19px] top-6 bottom-6 w-px bg-border" />
+
+                          <div className="space-y-3">
+                            {pkg.itinerary.map((day, i) => (
+                              <div key={day.day} className="relative">
+                                <div
+                                  className={cn(
+                                    "ml-10 border rounded-xl overflow-hidden transition-all duration-200",
+                                    openDay === i
+                                      ? "border-primary/30 shadow-md shadow-primary/5"
+                                      : "border-border hover:border-primary/20"
+                                  )}
+                                >
+                                  {/* Day header */}
+                                  <button
+                                    className="w-full flex items-center justify-between px-5 py-4 text-left transition-colors hover:bg-muted/30"
+                                    onClick={() => setOpenDay(openDay === i ? null : i)}
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div>
+                                        <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-0.5">
+                                          Day {day.day}
+                                        </div>
+                                        <div className="font-semibold text-foreground leading-snug">
+                                          {day.title || "—"}
+                                        </div>
+                                        {day.activities.length > 0 && openDay !== i && (
+                                          <div className="text-xs text-muted-foreground mt-0.5">
+                                            {day.activities.length} activit{day.activities.length === 1 ? "y" : "ies"}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                    {openDay === i
+                                      ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" />
+                                      : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+                                    }
+                                  </button>
+
+                                  {/* Expanded content */}
+                                  <AnimatePresence initial={false}>
+                                    {openDay === i && (
+                                      <motion.div
+                                        key="content"
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.22, ease: "easeInOut" }}
+                                        className="overflow-hidden"
+                                      >
+                                        <div className="px-5 pb-5 border-t border-border">
+                                          {day.description && (
+                                            <p className="text-muted-foreground text-sm mt-4 mb-4 leading-relaxed">
+                                              {day.description}
+                                            </p>
+                                          )}
+                                          {day.activities.length > 0 && (
+                                            <div className="flex flex-wrap gap-2">
+                                              {day.activities.map((act, idx) => (
+                                                <span
+                                                  key={idx}
+                                                  className="inline-flex items-center gap-1.5 bg-primary/8 text-primary border border-primary/15 text-xs font-medium px-3 py-1.5 rounded-full"
+                                                >
+                                                  <span className="w-1 h-1 rounded-full bg-primary/60 shrink-0" />
+                                                  {act}
+                                                </span>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+
+                                {/* Timeline dot — sits on the connector line, left of the card */}
+                                <div
+                                  className={cn(
+                                    "absolute left-0 top-4 w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all duration-200 z-10",
+                                    openDay === i
+                                      ? "bg-primary text-primary-foreground border-primary scale-110 shadow-lg shadow-primary/30"
+                                      : "bg-background text-muted-foreground border-border"
+                                  )}
+                                >
+                                  {day.day}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </motion.div>
                 )}
 
