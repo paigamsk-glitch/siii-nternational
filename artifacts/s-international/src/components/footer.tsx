@@ -23,8 +23,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
           <div className="md:col-span-1">
             <Link href="/" className="flex items-center gap-2 text-primary-foreground mb-4">
-              <Plane className="h-6 w-6 rotate-45 text-secondary" />
-              <span className="font-serif text-xl font-bold tracking-tight">S International</span>
+              <img src="/logo.png" alt="S International" className="h-14 w-auto" style={{ filter: "brightness(0) invert(1)" }} />
             </Link>
             <p className="text-primary-foreground/70 text-sm leading-relaxed mb-6">{tagline}</p>
             <div className="flex items-center gap-4">
