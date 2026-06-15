@@ -115,6 +115,14 @@ export function PackageDetail() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
 
+  // Write-review form
+  const [formOpen, setFormOpen] = useState(false);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [form, setForm] = useState({ reviewerName: "", reviewerCity: "", rating: 0, title: "", body: "", travelMonth: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
   useEffect(() => {
     if (!slug) return;
     setReviewsLoading(true);
@@ -124,6 +132,30 @@ export function PackageDetail() {
       .catch(() => {})
       .finally(() => setReviewsLoading(false));
   }, [slug]);
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.rating) { setSubmitError("Please select a star rating."); return; }
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      const res = await fetch(`${BASE_URL}/api/packages/${slug}/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) { setSubmitError(data.error || "Failed to submit."); return; }
+      setReviews(prev => [data.review, ...prev]);
+      setSubmitSuccess(true);
+      setForm({ reviewerName: "", reviewerCity: "", rating: 0, title: "", body: "", travelMonth: "" });
+      setTimeout(() => { setSubmitSuccess(false); setFormOpen(false); }, 2500);
+    } catch {
+      setSubmitError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   // Lightbox
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -740,6 +772,154 @@ export function PackageDetail() {
                   </div>
                 </>
               )}
+
+              {/* ── Write a Review ───────────────────────────────────────── */}
+              <div className="mt-8">
+                {!formOpen ? (
+                  <button
+                    onClick={() => setFormOpen(true)}
+                    className="w-full border-2 border-dashed border-primary/25 hover:border-primary/50 rounded-2xl py-5 flex items-center justify-center gap-2 text-primary/70 hover:text-primary font-medium transition-all group"
+                  >
+                    <Star className="w-5 h-5 group-hover:fill-amber-400 group-hover:text-amber-400 transition-colors" />
+                    Share your experience
+                  </button>
+                ) : (
+                  <AnimatePresence>
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      className="border border-primary/20 bg-primary/3 rounded-2xl p-6"
+                    >
+                      <div className="flex items-center justify-between mb-5">
+                        <h3 className="font-semibold text-lg">Write a Review</h3>
+                        <button onClick={() => { setFormOpen(false); setSubmitError(""); }} className="text-muted-foreground hover:text-foreground">
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      <AnimatePresence>
+                        {submitSuccess && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.96 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl px-4 py-3 mb-5 text-sm font-medium"
+                          >
+                            <CheckCircle2 className="w-4 h-4 shrink-0" />
+                            Your review has been posted! Thank you.
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      <form onSubmit={handleSubmitReview} className="space-y-4">
+                        {/* Star rating picker */}
+                        <div>
+                          <label className="text-sm font-medium text-foreground mb-2 block">Your Rating <span className="text-red-500">*</span></label>
+                          <div className="flex gap-1" onMouseLeave={() => setHoverRating(0)}>
+                            {[1,2,3,4,5].map(s => (
+                              <button
+                                key={s}
+                                type="button"
+                                onClick={() => setForm(f => ({ ...f, rating: s }))}
+                                onMouseEnter={() => setHoverRating(s)}
+                                className="p-0.5 transition-transform hover:scale-110"
+                              >
+                                <Star className={cn("w-8 h-8 transition-colors", (hoverRating || form.rating) >= s
+                                  ? "fill-amber-400 text-amber-400"
+                                  : "text-muted-foreground/25")} />
+                              </button>
+                            ))}
+                            {form.rating > 0 && (
+                              <span className="ml-2 self-center text-sm text-muted-foreground">
+                                {["", "Poor", "Fair", "Good", "Very Good", "Excellent"][form.rating]}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Name + City */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-sm font-medium text-foreground mb-1.5 block">Your Name <span className="text-red-500">*</span></label>
+                            <input
+                              required
+                              value={form.reviewerName}
+                              onChange={e => setForm(f => ({ ...f, reviewerName: e.target.value }))}
+                              placeholder="e.g. Priya Sharma"
+                              className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-foreground mb-1.5 block">City</label>
+                            <input
+                              value={form.reviewerCity}
+                              onChange={e => setForm(f => ({ ...f, reviewerCity: e.target.value }))}
+                              placeholder="e.g. Mumbai"
+                              className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Title + Travel Month */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-sm font-medium text-foreground mb-1.5 block">Review Title <span className="text-red-500">*</span></label>
+                            <input
+                              required
+                              value={form.title}
+                              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                              placeholder="e.g. Absolutely magical!"
+                              className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-foreground mb-1.5 block">When did you travel?</label>
+                            <input
+                              value={form.travelMonth}
+                              onChange={e => setForm(f => ({ ...f, travelMonth: e.target.value }))}
+                              placeholder="e.g. March 2025"
+                              className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Body */}
+                        <div>
+                          <label className="text-sm font-medium text-foreground mb-1.5 block">Your Review <span className="text-red-500">*</span></label>
+                          <textarea
+                            required
+                            rows={4}
+                            value={form.body}
+                            onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
+                            placeholder="Tell other travellers about your experience — the highlights, tips, and what made it memorable…"
+                            className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none leading-relaxed"
+                          />
+                        </div>
+
+                        {submitError && (
+                          <p className="text-sm text-red-500">{submitError}</p>
+                        )}
+
+                        <div className="flex items-center gap-3 pt-1">
+                          <Button
+                            type="submit"
+                            disabled={submitting}
+                            className="flex-1 sm:flex-none sm:px-8"
+                          >
+                            {submitting ? (
+                              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Submitting…</>
+                            ) : "Post Review"}
+                          </Button>
+                          <button type="button" onClick={() => { setFormOpen(false); setSubmitError(""); }} className="text-sm text-muted-foreground hover:text-foreground">
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    </motion.div>
+                  </AnimatePresence>
+                )}
+              </div>
             </div>
           </div>
 
