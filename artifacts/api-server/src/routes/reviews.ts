@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { reviewsTable, packagesTable } from "@workspace/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 
 const router = Router();
 
@@ -69,6 +69,26 @@ router.post("/packages/:slug/reviews", async (req, res) => {
     res.status(201).json({ review });
   } catch (err) {
     res.status(500).json({ error: "Failed to submit review" });
+  }
+});
+
+// PATCH /api/packages/:slug/reviews/:id/helpful
+router.patch("/packages/:slug/reviews/:id/helpful", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [updated] = await db
+      .update(reviewsTable)
+      .set({ helpfulCount: sql`${reviewsTable.helpfulCount} + 1` })
+      .where(eq(reviewsTable.id, id))
+      .returning();
+
+    if (!updated) {
+      return res.status(404).json({ error: "Review not found" });
+    }
+
+    res.json({ helpfulCount: updated.helpfulCount });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update helpful count" });
   }
 });
 

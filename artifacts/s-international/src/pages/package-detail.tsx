@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Star, Clock, Users, ChevronDown, ChevronUp, MapPin, Calendar,
   Shield, CheckCircle2, XCircle, Bed, ArrowLeft, Share2,
-  Heart, Camera, Loader2, ChevronLeft, ChevronRight, X, Expand
+  Heart, Camera, Loader2, ChevronLeft, ChevronRight, X, Expand, ThumbsUp
 } from "lucide-react";
 
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -114,6 +114,32 @@ export function PackageDetail() {
   // Reviews
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [helpfulVoted, setHelpfulVoted] = useState<Set<string>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem("helpful_votes") || "[]")); }
+    catch { return new Set(); }
+  });
+  const [helpfulLoading, setHelpfulLoading] = useState<Set<string>>(new Set());
+
+  const handleHelpful = async (reviewId: string) => {
+    if (helpfulVoted.has(reviewId) || helpfulLoading.has(reviewId)) return;
+    setHelpfulLoading(prev => new Set(prev).add(reviewId));
+    setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, helpfulCount: r.helpfulCount + 1 } : r));
+    const newVoted = new Set(helpfulVoted).add(reviewId);
+    setHelpfulVoted(newVoted);
+    try {
+      localStorage.setItem("helpful_votes", JSON.stringify([...newVoted]));
+    } catch {}
+    try {
+      await fetch(`${BASE_URL}/api/packages/${slug}/reviews/${reviewId}/helpful`, { method: "PATCH" });
+    } catch {
+      setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, helpfulCount: r.helpfulCount - 1 } : r));
+      const reverted = new Set(helpfulVoted);
+      reverted.delete(reviewId);
+      setHelpfulVoted(reverted);
+    } finally {
+      setHelpfulLoading(prev => { const s = new Set(prev); s.delete(reviewId); return s; });
+    }
+  };
 
   // Write-review form
   const [formOpen, setFormOpen] = useState(false);
@@ -759,11 +785,35 @@ export function PackageDetail() {
                               <p className="text-sm text-muted-foreground leading-relaxed">{review.body}</p>
 
                               {/* Footer */}
-                              {review.helpfulCount > 0 && (
-                                <p className="text-xs text-muted-foreground mt-3">
-                                  <span className="font-medium text-foreground">{review.helpfulCount}</span> people found this helpful
-                                </p>
-                              )}
+                              <div className="flex items-center gap-3 mt-3">
+                                <button
+                                  onClick={() => handleHelpful(review.id)}
+                                  disabled={helpfulVoted.has(review.id) || helpfulLoading.has(review.id)}
+                                  className={cn(
+                                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
+                                    helpfulVoted.has(review.id)
+                                      ? "bg-emerald-50 border-emerald-200 text-emerald-700 cursor-default"
+                                      : helpfulLoading.has(review.id)
+                                      ? "bg-muted border-border text-muted-foreground cursor-wait"
+                                      : "bg-background border-border text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 cursor-pointer"
+                                  )}
+                                >
+                                  <ThumbsUp className={cn(
+                                    "w-3 h-3 transition-all",
+                                    helpfulVoted.has(review.id) ? "fill-emerald-600 text-emerald-600" : "",
+                                    helpfulLoading.has(review.id) ? "animate-pulse" : ""
+                                  )} />
+                                  {helpfulVoted.has(review.id) ? "Helpful!" : "Helpful"}
+                                  {review.helpfulCount > 0 && (
+                                    <span className={cn(
+                                      "ml-0.5 font-bold tabular-nums",
+                                      helpfulVoted.has(review.id) ? "text-emerald-700" : "text-foreground"
+                                    )}>
+                                      {review.helpfulCount}
+                                    </span>
+                                  )}
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </motion.div>
