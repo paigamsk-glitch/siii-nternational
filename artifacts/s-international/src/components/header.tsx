@@ -32,7 +32,7 @@ export function Header() {
     { label: "Hotels", path: "/hotels", icon: Building2 },
     { label: "Packages", path: "/packages", icon: Package },
     { label: "Visa", path: "/visa", icon: Globe },
-    { label: "Forex", path: "/forex", icon: DollarSign },
+    { label: "Currency", path: "/currency", icon: DollarSign },
     { label: "Contact", path: "/contact", icon: null },
   ];
 
