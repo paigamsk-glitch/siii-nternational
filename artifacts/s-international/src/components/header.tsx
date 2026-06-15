@@ -40,7 +40,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center text-primary">
-          <img src="/logo.png" alt="S International" className="h-12 w-auto" />
+          <img src="/logo.png" alt="S International" className="h-16 w-auto" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
