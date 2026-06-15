@@ -1,0 +1,1 @@
+- [API route prefix](api-route-prefix.md) — Express app mounts at `/api`, so all route files use paths WITHOUT the `/api` prefix

@@ -21,6 +21,19 @@ import { useBookingStore } from "@/lib/booking-store";
 
 const BASE_URL = import.meta.env.BASE_URL.replace(/\/$/, "");
 
+interface Review {
+  id: string;
+  reviewerName: string;
+  reviewerCity: string;
+  rating: number;
+  title: string;
+  body: string;
+  travelMonth: string;
+  helpfulCount: number;
+  isVerified: number;
+  createdAt: string;
+}
+
 interface NormalizedDetail {
   id: string;
   slug: string;
@@ -97,6 +110,20 @@ export function PackageDetail() {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [activeTab, setActiveTab] = useState<"itinerary" | "inclusions" | "info">("itinerary");
   const stickyRef = useRef<HTMLDivElement>(null);
+
+  // Reviews
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!slug) return;
+    setReviewsLoading(true);
+    fetch(`${BASE_URL}/api/packages/${slug}/reviews`)
+      .then(r => r.ok ? r.json() : { reviews: [] })
+      .then(data => setReviews(data.reviews || []))
+      .catch(() => {})
+      .finally(() => setReviewsLoading(false));
+  }, [slug]);
 
   // Lightbox
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -576,6 +603,143 @@ export function PackageDetail() {
                   </motion.div>
                 )}
               </AnimatePresence>
+            </div>
+
+            {/* ── Reviews Section ─────────────────────────────────────────── */}
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-serif font-bold">Traveller Reviews</h2>
+                  {reviews.length > 0 && (
+                    <p className="text-sm text-muted-foreground mt-0.5">{reviews.length} verified reviews</p>
+                  )}
+                </div>
+                {reviews.length > 0 && (
+                  <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2">
+                    <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+                    <span className="text-xl font-bold text-amber-600">
+                      {(reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)}
+                    </span>
+                    <span className="text-sm text-muted-foreground">/ 5</span>
+                  </div>
+                )}
+              </div>
+
+              {reviewsLoading ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                </div>
+              ) : reviews.length === 0 ? (
+                <div className="text-center py-12 border border-dashed border-border rounded-2xl">
+                  <Star className="w-8 h-8 mx-auto mb-3 text-muted-foreground/30" />
+                  <p className="text-muted-foreground text-sm">No reviews yet for this package.</p>
+                </div>
+              ) : (
+                <>
+                  {/* Rating distribution bar */}
+                  <div className="bg-muted/30 rounded-2xl p-5 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-5 items-center">
+                    <div className="text-center">
+                      <div className="text-6xl font-bold text-foreground leading-none">
+                        {(reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)}
+                      </div>
+                      <div className="flex justify-center gap-0.5 my-2">
+                        {[1,2,3,4,5].map(s => {
+                          const avg = reviews.reduce((a, r) => a + r.rating, 0) / reviews.length;
+                          return (
+                            <Star
+                              key={s}
+                              className={cn("w-5 h-5", s <= Math.round(avg)
+                                ? "fill-amber-400 text-amber-400"
+                                : "text-muted-foreground/30")}
+                            />
+                          );
+                        })}
+                      </div>
+                      <p className="text-sm text-muted-foreground">Based on {reviews.length} reviews</p>
+                    </div>
+                    <div className="space-y-1.5">
+                      {[5,4,3,2,1].map(star => {
+                        const count = reviews.filter(r => Math.round(r.rating) === star).length;
+                        const pct = reviews.length ? (count / reviews.length) * 100 : 0;
+                        return (
+                          <div key={star} className="flex items-center gap-2 text-xs">
+                            <span className="w-3 text-right text-muted-foreground font-medium">{star}</span>
+                            <Star className="w-3 h-3 fill-amber-400 text-amber-400 shrink-0" />
+                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-amber-400 rounded-full transition-all duration-500"
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                            <span className="w-5 text-muted-foreground">{count}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Review cards */}
+                  <div className="space-y-4">
+                    {reviews.map((review) => {
+                      const initials = review.reviewerName.split(" ").map(n => n[0]).join("").slice(0,2).toUpperCase();
+                      const colors = ["bg-blue-100 text-blue-700","bg-emerald-100 text-emerald-700","bg-violet-100 text-violet-700","bg-orange-100 text-orange-700","bg-rose-100 text-rose-700","bg-teal-100 text-teal-700"];
+                      const color = colors[review.reviewerName.charCodeAt(0) % colors.length];
+                      return (
+                        <motion.div
+                          key={review.id}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="border border-border rounded-2xl p-5 hover:border-primary/20 transition-colors"
+                        >
+                          <div className="flex items-start gap-4">
+                            {/* Avatar */}
+                            <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0", color)}>
+                              {initials}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              {/* Header row */}
+                              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1">
+                                <span className="font-semibold text-sm text-foreground">{review.reviewerName}</span>
+                                <span className="text-muted-foreground text-xs">·</span>
+                                <span className="text-muted-foreground text-xs">{review.reviewerCity}</span>
+                                {review.isVerified === 1 && (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
+                                    <CheckCircle2 className="w-2.5 h-2.5" /> Verified
+                                  </span>
+                                )}
+                                <span className="ml-auto text-xs text-muted-foreground shrink-0">{review.travelMonth}</span>
+                              </div>
+
+                              {/* Stars */}
+                              <div className="flex gap-0.5 mb-2">
+                                {[1,2,3,4,5].map(s => (
+                                  <Star
+                                    key={s}
+                                    className={cn("w-3.5 h-3.5", s <= review.rating
+                                      ? "fill-amber-400 text-amber-400"
+                                      : "text-muted-foreground/25")}
+                                  />
+                                ))}
+                              </div>
+
+                              {/* Review content */}
+                              <p className="font-semibold text-sm text-foreground mb-1">{review.title}</p>
+                              <p className="text-sm text-muted-foreground leading-relaxed">{review.body}</p>
+
+                              {/* Footer */}
+                              {review.helpfulCount > 0 && (
+                                <p className="text-xs text-muted-foreground mt-3">
+                                  <span className="font-medium text-foreground">{review.helpfulCount}</span> people found this helpful
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
