@@ -433,6 +433,11 @@ export function Trains() {
                   <Radio className="w-3.5 h-3.5 animate-pulse" /> Live Status
                 </button>
               </Link>
+              <Link href="/train-schedule">
+                <button className="flex items-center gap-2 bg-white/15 hover:bg-white/25 text-white border border-white/30 rounded-xl px-4 py-2 text-sm font-semibold transition-all backdrop-blur-sm">
+                  <CalendarIcon className="w-3.5 h-3.5" /> Schedule
+                </button>
+              </Link>
               <Link href="/pnr">
                 <button className="flex items-center gap-2 bg-white/15 hover:bg-white/25 text-white border border-white/30 rounded-xl px-4 py-2 text-sm font-semibold transition-all backdrop-blur-sm">
                   <Search className="w-3.5 h-3.5" /> PNR Status

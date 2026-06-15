@@ -617,6 +617,75 @@ router.get("/trains/live-status/:trainNumber", async (req, res): Promise<void> =
   }
 });
 
+// GET /trains/schedule/:trainNumber
+router.get("/trains/schedule/:trainNumber", async (req, res): Promise<void> => {
+  const { trainNumber } = req.params;
+  try {
+    const [train] = await db
+      .select()
+      .from(trainsTable)
+      .where(eq(trainsTable.trainNumber, trainNumber.trim()))
+      .limit(1);
+
+    if (!train) {
+      res.status(404).json({ error: "Train not found" });
+      return;
+    }
+
+    const stops = getRouteStops(train.routeKey);
+    const allStops = [train.fromStation, ...stops, train.toStation];
+    const totalStops = allStops.length;
+
+    // Build schedule: spread departure/arrival times across the journey
+    const depHour = train.departureTime !== "--:--"
+      ? parseInt(train.departureTime.split(":")[0])
+      : 6;
+    const depMin = train.departureTime !== "--:--"
+      ? parseInt(train.departureTime.split(":")[1])
+      : 0;
+    const totalMins = train.durationMins > 0 ? train.durationMins : totalStops * 60;
+
+    const scheduleStops = allStops.map((name, i) => {
+      const fraction = i / (totalStops - 1);
+      const absMin = depHour * 60 + depMin + Math.round(fraction * totalMins);
+      const h = Math.floor(absMin / 60) % 24;
+      const m = absMin % 60;
+      const day = Math.floor((depHour * 60 + depMin + Math.round(fraction * totalMins)) / 1440) + 1;
+      const time = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+      const seed = train.trainNumber.split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0);
+
+      return {
+        no: i + 1,
+        code: name.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 5) || "STA",
+        name,
+        scheduledArrival: i === 0 ? null : time,
+        scheduledDeparture: i === totalStops - 1 ? null : time,
+        haltMins: i === 0 || i === totalStops - 1 ? 0 : (i * 3 + (seed % 7)) % 10 + 1,
+        distance: Math.round(fraction * (train.durationMins > 0 ? train.durationMins * 1.2 : totalStops * 80)),
+        platform: `${(seed + i) % 8 + 1}`,
+        day,
+      };
+    });
+
+    res.json({
+      success: true,
+      data: {
+        trainNumber: train.trainNumber,
+        trainName: train.trainName,
+        trainType: train.trainType,
+        fromStation: train.fromStation,
+        toStation: train.toStation,
+        departureTime: train.departureTime,
+        arrivalTime: train.arrivalTime,
+        durationMins: train.durationMins,
+        stops: scheduleStops,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 // GET /trains/search?q=...
 router.get("/trains/search", async (req, res): Promise<void> => {
   const q = (req.query.q as string ?? "").trim();

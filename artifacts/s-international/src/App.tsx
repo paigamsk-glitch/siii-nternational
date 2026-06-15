@@ -31,6 +31,7 @@ import { TrainBookingPage } from "@/pages/train-booking";
 import { TrainCheckout } from "@/pages/train-checkout";
 import { PNRStatus } from "@/pages/pnr";
 import { LiveTrainStatus } from "@/pages/live-status";
+import { TrainSchedule } from "@/pages/train-schedule";
 import { Visa } from "@/pages/visa";
 import { VisaDetail } from "@/pages/visa-detail";
 import { VisaStatus } from "@/pages/visa-status";
@@ -73,6 +74,7 @@ function Router() {
             <Route path="/train-checkout" component={TrainCheckout} />
             <Route path="/pnr" component={PNRStatus} />
             <Route path="/live-status" component={LiveTrainStatus} />
+            <Route path="/train-schedule" component={TrainSchedule} />
             <Route path="/visa" component={Visa} />
             <Route path="/visa/status" component={VisaStatus} />
             <Route path="/visa/:countryCode" component={VisaDetail} />
