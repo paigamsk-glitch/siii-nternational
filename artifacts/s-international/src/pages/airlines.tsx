@@ -19,30 +19,60 @@ const COUNTRY_FLAGS: Record<string, string> = {
   "Hong Kong": "🇭🇰", "Malta": "🇲🇹", "Portugal": "🇵🇹",
 };
 
+function getRankStyle(rank: number): { bg: string; text: string; border: string } {
+  if (rank === 1)  return { bg: "bg-amber-400",   text: "text-white",        border: "border-amber-500" };
+  if (rank === 2)  return { bg: "bg-slate-400",    text: "text-white",        border: "border-slate-500" };
+  if (rank === 3)  return { bg: "bg-orange-500",   text: "text-white",        border: "border-orange-600" };
+  if (rank <= 5)   return { bg: "bg-primary",      text: "text-white",        border: "border-primary/80" };
+  if (rank <= 10)  return { bg: "bg-blue-500",     text: "text-white",        border: "border-blue-600" };
+  if (rank <= 20)  return { bg: "bg-indigo-500",   text: "text-white",        border: "border-indigo-600" };
+  if (rank <= 30)  return { bg: "bg-violet-500",   text: "text-white",        border: "border-violet-600" };
+  if (rank <= 40)  return { bg: "bg-purple-500",   text: "text-white",        border: "border-purple-600" };
+  if (rank <= 50)  return { bg: "bg-fuchsia-500",  text: "text-white",        border: "border-fuchsia-600" };
+  if (rank <= 60)  return { bg: "bg-rose-500",     text: "text-white",        border: "border-rose-600" };
+  if (rank <= 70)  return { bg: "bg-red-500",      text: "text-white",        border: "border-red-600" };
+  if (rank <= 80)  return { bg: "bg-orange-400",   text: "text-white",        border: "border-orange-500" };
+  if (rank <= 90)  return { bg: "bg-teal-500",     text: "text-white",        border: "border-teal-600" };
+  return              { bg: "bg-emerald-500",   text: "text-white",        border: "border-emerald-600" };
+}
+
 const RANKED_AIRLINES = [...AIRLINES].sort((a, b) => b.dailyFlights - a.dailyFlights);
+
+const TOP_COUNTRIES = ["All", "USA", "China", "India", "United Kingdom", "Germany", "France", "UAE", "Australia", "Japan", "South Korea", "Brazil", "Canada", "Spain", "Turkey", "Netherlands", "Ireland", "Indonesia", "Philippines", "Vietnam", "Ethiopia", "Qatar", "Singapore", "Malaysia", "Saudi Arabia", "Russia", "Mexico", "Colombia", "Chile", "New Zealand", "Norway", "Sweden", "Finland", "Austria", "Poland", "Greece", "Portugal", "Hungary", "Malta", "Hong Kong", "Switzerland"];
 
 export function Airlines() {
   const [, setLocation] = useLocation();
   const [search, setSearch] = useState("");
+  const [countryFilter, setCountryFilter] = useState("All");
+
+  const countriesInList = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const a of RANKED_AIRLINES) {
+      counts[a.country] = (counts[a.country] || 0) + 1;
+    }
+    return TOP_COUNTRIES.filter(c => c === "All" || counts[c]);
+  }, []);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return RANKED_AIRLINES;
+    let list = RANKED_AIRLINES;
+    if (countryFilter !== "All") list = list.filter(a => a.country === countryFilter);
+    if (!search.trim()) return list;
     const q = search.trim().toLowerCase();
-    return RANKED_AIRLINES.filter(a =>
+    return list.filter(a =>
       a.name.toLowerCase().includes(q) ||
       a.iata.toLowerCase().includes(q) ||
       a.country.toLowerCase().includes(q) ||
       a.alliance.toLowerCase().includes(q) ||
       a.hub.toLowerCase().includes(q)
     );
-  }, [search]);
+  }, [search, countryFilter]);
 
   const hasRoutes = (slug: string) => !!AIRLINE_ROUTES[slug];
 
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Hero */}
-      <section className="relative pt-14 pb-28 overflow-hidden">
+      <section className="relative pt-14 pb-32 overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2000&auto=format&fit=crop')" }} />
         <div className="absolute inset-0 bg-gradient-to-b from-primary/90 via-primary/85 to-primary/80" />
@@ -58,8 +88,8 @@ export function Airlines() {
               Ranked by number of daily departures. Click any airline to view its interactive route map.
             </p>
 
-            {/* ── SEARCH BAR ── */}
-            <div className="relative max-w-xl mx-auto">
+            {/* Search */}
+            <div className="relative max-w-xl mx-auto mb-5">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
               <input
                 type="text"
@@ -74,9 +104,29 @@ export function Airlines() {
                 </button>
               )}
             </div>
-            {search && (
+
+            {/* Country filter chips */}
+            <div className="flex flex-wrap justify-center gap-2 max-w-3xl mx-auto">
+              {countriesInList.map(country => (
+                <button
+                  key={country}
+                  onClick={() => setCountryFilter(prev => prev === country ? "All" : country)}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
+                    countryFilter === country
+                      ? "bg-white text-primary border-white shadow-lg scale-105"
+                      : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20 hover:border-white/40"
+                  }`}
+                >
+                  {country === "All" ? "🌐" : (COUNTRY_FLAGS[country] || "🌐")} {country}
+                </button>
+              ))}
+            </div>
+
+            {(search || countryFilter !== "All") && (
               <p className="text-white/60 text-sm mt-3">
-                {filtered.length} airline{filtered.length !== 1 ? "s" : ""} found for "<span className="text-white font-medium">{search}</span>"
+                {filtered.length} airline{filtered.length !== 1 ? "s" : ""}
+                {countryFilter !== "All" ? ` from ${COUNTRY_FLAGS[countryFilter] || ""} ${countryFilter}` : ""}
+                {search ? ` matching "<span class="text-white font-medium">${search}</span>"` : ""}
               </p>
             )}
           </motion.div>
@@ -84,18 +134,19 @@ export function Airlines() {
       </section>
 
       {/* Airlines List */}
-      <div className="container mx-auto px-4 max-w-5xl -mt-14 relative z-10">
+      <div className="container mx-auto px-4 max-w-5xl -mt-16 relative z-10">
         {filtered.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             <Plane className="w-10 h-10 mx-auto mb-3 opacity-30" />
             <p className="text-lg font-medium">No airlines found</p>
-            <p className="text-sm">Try a different search term</p>
+            <p className="text-sm">Try a different search term or filter</p>
           </div>
         ) : (
           <div className="space-y-2">
             {filtered.map((airline, idx) => {
               const rank = RANKED_AIRLINES.indexOf(airline) + 1;
               const routesAvailable = hasRoutes(airline.slug);
+              const rankStyle = getRankStyle(rank);
               return (
                 <motion.div
                   key={airline.id}
@@ -105,9 +156,9 @@ export function Airlines() {
                   onClick={() => setLocation(`/airline/${airline.slug}/routes`)}
                   className="bg-white rounded-2xl border border-border shadow-sm transition-all flex items-center gap-4 px-4 py-3 hover:shadow-lg hover:border-primary/25 cursor-pointer group"
                 >
-                  {/* Rank */}
-                  <div className="w-10 text-center shrink-0">
-                    <span className={`text-sm font-bold ${rank <= 3 ? "text-amber-500" : rank <= 10 ? "text-primary" : "text-muted-foreground"}`}>
+                  {/* Rank badge */}
+                  <div className="w-10 flex justify-center shrink-0">
+                    <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold border ${rankStyle.bg} ${rankStyle.text} ${rankStyle.border}`}>
                       {rank}
                     </span>
                   </div>
@@ -165,7 +216,7 @@ export function Airlines() {
           </div>
         )}
 
-        {!search && (
+        {!search && countryFilter === "All" && (
           <p className="text-center text-xs text-muted-foreground mt-8 pb-4">
             Showing {RANKED_AIRLINES.length} airlines · Updated 2026 · Ranked by daily departures
           </p>
