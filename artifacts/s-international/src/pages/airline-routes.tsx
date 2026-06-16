@@ -237,6 +237,78 @@ export function AirlineRoutes() {
     );
   }
 
+  if (rawRoutes.length === 0) {
+    const ranked = [...AIRLINES].sort((a, b) => b.dailyFlights - a.dailyFlights);
+    const rank = ranked.findIndex(a => a.slug === airline.slug) + 1;
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Header strip */}
+        <div className="border-b border-border bg-white px-4 py-2.5 flex items-center gap-3 sticky top-0 z-10">
+          <button onClick={() => setLocation("/airlines")} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-sm transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Airlines
+          </button>
+          <div className="w-px h-5 bg-border" />
+          <div className="w-9 h-9 bg-muted rounded-lg border border-border flex items-center justify-center overflow-hidden shrink-0">
+            {airline.logo ? (
+              <img src={airline.logo} alt={airline.name} className="w-8 h-8 object-contain"
+                onError={e => { (e.target as HTMLImageElement).style.display = "none"; (e.target as HTMLImageElement).parentElement!.innerHTML = `<span class="text-xs font-bold text-primary">${airline.iata}</span>`; }} />
+            ) : (
+              <span className="text-xs font-bold text-primary">{airline.iata}</span>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="font-bold text-foreground text-sm leading-tight">{airline.name}</h1>
+            <p className="text-xs text-muted-foreground">{COUNTRY_FLAGS[airline.country] || "🌐"} {airline.country} · {airline.iata} · {airline.alliance}</p>
+          </div>
+        </div>
+
+        {/* Info card */}
+        <div className="container mx-auto max-w-2xl px-4 py-12">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl border border-border shadow-sm p-8 text-center mb-6">
+            <div className="w-20 h-20 bg-muted rounded-2xl border border-border flex items-center justify-center mx-auto mb-5 overflow-hidden">
+              {airline.logo ? (
+                <img src={airline.logo} alt={airline.name} className="w-18 h-18 object-contain"
+                  onError={e => { (e.target as HTMLImageElement).style.display = "none"; (e.target as HTMLImageElement).parentElement!.innerHTML = `<span class="text-xl font-bold text-primary">${airline.iata}</span>`; }} />
+              ) : (
+                <span className="text-xl font-bold text-primary">{airline.iata}</span>
+              )}
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-semibold mb-3">
+              #{rank} Worldwide by Daily Flights
+            </div>
+            <h2 className="text-2xl font-serif font-bold text-foreground mb-1">{airline.name}</h2>
+            <p className="text-muted-foreground text-sm mb-6">{COUNTRY_FLAGS[airline.country] || "🌐"} {airline.country} · Hub: {airline.hub} · {airline.alliance}</p>
+
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              {[
+                { label: "Daily Flights", value: airline.dailyFlights.toLocaleString() },
+                { label: "Destinations", value: airline.totalDestinations.toLocaleString() },
+                { label: "Routes", value: airline.totalRoutes.toLocaleString() },
+              ].map(({ label, value }) => (
+                <div key={label} className="bg-muted/40 rounded-xl p-4">
+                  <p className="text-2xl font-bold text-primary">{value}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 text-left">
+              <Plane className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-amber-800">Route map coming soon</p>
+                <p className="text-xs text-amber-600 mt-0.5">Interactive route data for {airline.name} is being added. Check back soon for the full route explorer.</p>
+              </div>
+            </div>
+          </motion.div>
+
+          <button onClick={() => setLocation("/airlines")} className="w-full py-3 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all text-sm font-medium flex items-center justify-center gap-2">
+            <ArrowLeft className="w-4 h-4" /> Back to all airlines
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const mapRoutesToShow = selectedRoute
     ? filteredRoutes.filter(r => r.origin === selectedRoute.origin && r.destination === selectedRoute.destination)
     : filteredRoutes;

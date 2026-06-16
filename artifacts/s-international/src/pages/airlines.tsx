@@ -102,12 +102,8 @@ export function Airlines() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: Math.min(idx * 0.03, 0.5) }}
-                  onClick={() => routesAvailable && setLocation(`/airline/${airline.slug}/routes`)}
-                  className={`bg-white rounded-2xl border border-border shadow-sm transition-all flex items-center gap-4 px-4 py-3 ${
-                    routesAvailable
-                      ? "hover:shadow-lg hover:border-primary/25 cursor-pointer group"
-                      : "opacity-80 cursor-default"
-                  }`}
+                  onClick={() => setLocation(`/airline/${airline.slug}/routes`)}
+                  className="bg-white rounded-2xl border border-border shadow-sm transition-all flex items-center gap-4 px-4 py-3 hover:shadow-lg hover:border-primary/25 cursor-pointer group"
                 >
                   {/* Rank */}
                   <div className="w-10 text-center shrink-0">
@@ -158,15 +154,11 @@ export function Airlines() {
                   </div>
 
                   {/* CTA */}
-                  {routesAvailable ? (
-                    <div className="flex items-center gap-1 text-xs font-semibold text-primary group-hover:gap-2 transition-all shrink-0">
-                      <Map className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">View Routes</span>
-                      <TrendingUp className="w-3.5 h-3.5" />
-                    </div>
-                  ) : (
-                    <span className="text-xs text-muted-foreground shrink-0">Coming soon</span>
-                  )}
+                  <div className="flex items-center gap-1 text-xs font-semibold text-primary group-hover:gap-2 transition-all shrink-0">
+                    <Map className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">{routesAvailable ? "View Routes" : "View Info"}</span>
+                    <TrendingUp className="w-3.5 h-3.5" />
+                  </div>
                 </motion.div>
               );
             })}
