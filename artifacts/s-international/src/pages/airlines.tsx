@@ -19,22 +19,6 @@ const COUNTRY_FLAGS: Record<string, string> = {
   "Hong Kong": "🇭🇰", "Malta": "🇲🇹", "Portugal": "🇵🇹",
 };
 
-function getRankStyle(rank: number): { bg: string; text: string; border: string } {
-  if (rank === 1)  return { bg: "bg-amber-400",   text: "text-white",        border: "border-amber-500" };
-  if (rank === 2)  return { bg: "bg-slate-400",    text: "text-white",        border: "border-slate-500" };
-  if (rank === 3)  return { bg: "bg-orange-500",   text: "text-white",        border: "border-orange-600" };
-  if (rank <= 5)   return { bg: "bg-primary",      text: "text-white",        border: "border-primary/80" };
-  if (rank <= 10)  return { bg: "bg-blue-500",     text: "text-white",        border: "border-blue-600" };
-  if (rank <= 20)  return { bg: "bg-indigo-500",   text: "text-white",        border: "border-indigo-600" };
-  if (rank <= 30)  return { bg: "bg-violet-500",   text: "text-white",        border: "border-violet-600" };
-  if (rank <= 40)  return { bg: "bg-purple-500",   text: "text-white",        border: "border-purple-600" };
-  if (rank <= 50)  return { bg: "bg-fuchsia-500",  text: "text-white",        border: "border-fuchsia-600" };
-  if (rank <= 60)  return { bg: "bg-rose-500",     text: "text-white",        border: "border-rose-600" };
-  if (rank <= 70)  return { bg: "bg-red-500",      text: "text-white",        border: "border-red-600" };
-  if (rank <= 80)  return { bg: "bg-orange-400",   text: "text-white",        border: "border-orange-500" };
-  if (rank <= 90)  return { bg: "bg-teal-500",     text: "text-white",        border: "border-teal-600" };
-  return              { bg: "bg-emerald-500",   text: "text-white",        border: "border-emerald-600" };
-}
 
 const RANKED_AIRLINES = [...AIRLINES].sort((a, b) => b.dailyFlights - a.dailyFlights);
 
@@ -146,7 +130,6 @@ export function Airlines() {
             {filtered.map((airline, idx) => {
               const rank = RANKED_AIRLINES.indexOf(airline) + 1;
               const routesAvailable = hasRoutes(airline.slug);
-              const rankStyle = getRankStyle(rank);
               return (
                 <motion.div
                   key={airline.id}
@@ -156,11 +139,9 @@ export function Airlines() {
                   onClick={() => setLocation(`/airline/${airline.slug}/routes`)}
                   className="bg-white rounded-2xl border border-border shadow-sm transition-all flex items-center gap-4 px-4 py-3 hover:shadow-lg hover:border-primary/25 cursor-pointer group"
                 >
-                  {/* Rank badge */}
-                  <div className="w-10 flex justify-center shrink-0">
-                    <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold border ${rankStyle.bg} ${rankStyle.text} ${rankStyle.border}`}>
-                      {rank}
-                    </span>
+                  {/* Rank */}
+                  <div className="w-10 text-center shrink-0">
+                    <span className="text-sm font-bold text-amber-500">{rank}</span>
                   </div>
 
                   {/* Logo */}
